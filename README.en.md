@@ -15,7 +15,10 @@ I built it for my own site and share it so **others can adapt it to their needs*
 - **Media library:** multi-upload, alt text, copy-ready Markdown, "in use" delete protection; **EXIF/GPS metadata is stripped losslessly from JPEG/PNG/WebP** (no GD required)
 - **Admin:** dashboard, articles, projects, categories, tags, messages, users (admin/editor roles), live Markdown preview, **two-factor authentication (TOTP)** with backup codes, brute-force lockout
 - **Hosting-friendly:** token-protected browser installer (off by default) for shared hosting without SSH, automatic schema updates when an admin signs in, and a "live environment check" card in the dashboard (debug on, no HTTPS, missing proxy setting, leftover installer files…)
-- **Ops:** SMTP notification for contact messages, dependency-free **backups** (`php bin/yedekle.php`), non-destructive **updates** (`php database/install.php`), Docker, Nginx/Apache samples, CI
+- **Backup & restore:** one-click backups in the admin panel (no mysqldump), a **restore wizard** with strict dry-run validation, automatic pre-restore backup and rollback on failure, scheduled backups, **off-site copies via e-mail / FTP(S) / WebDAV**
+- **Security centre:** active sessions (remote sign-out), audit log, **e-mail password reset**, new-device alerts, optional enforced 2FA
+- **Privacy / GDPR-KVKK:** free-form pages with ready-made privacy templates (generic, not legal advice), consent checkbox on the contact form, message retention, IP truncation
+- **Ops:** SMTP notification for contact messages, maintenance tasks (log rotation, cleanup; cron or web-cron), dependency-free **backups** (`php bin/yedekle.php`, `php bin/geri-yukle.php`), non-destructive **updates** (`php database/install.php`), Docker, Nginx/Apache samples, CI
 - **Security:** PDO prepared statements, output escaping, CSRF, strict CSP (nonce), hardened sessions, bcrypt, content-based MIME validation for uploads (no SVG; files stored outside the web root), header-injection-safe SMTP, rate limits — see [SECURITY.md](SECURITY.md)
 
 ## Quick start
@@ -40,7 +43,10 @@ Detailed guides (Turkish): [docs/KURULUM.md](docs/KURULUM.md) (XAMPP, Linux, Ngi
 php database/install.php                          # install / update (data is preserved)
 php database/install.php --parola-sifirla=a@b.c   # reset a password
 php database/install.php --2fa-sifirla=a@b.c      # disable 2FA for a locked-out user
-php bin/yedekle.php [--yuklemeler]                # database (+ media) backup → storage/yedekler/
+php bin/yedekle.php [--medya] [--dis]             # database (+ media) backup → storage/yedekler/ (+ off-site targets)
+php bin/geri-yukle.php <file> [--kuru]            # restore (dry-run first, automatic pre-restore backup)
+php bin/bakim.php                                 # maintenance tasks (cron: daily)
+php bin/parola-sifirla.php a@b.c                  # reset a password from the server
 php bin/eposta-test.php [to@example.com]          # test SMTP settings
 php tests/calistir.php                            # automated tests (no database required)
 ```

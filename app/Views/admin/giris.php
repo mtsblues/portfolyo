@@ -24,6 +24,7 @@ $basari = \App\Core\Oturum::flashGelen('basari');
             </div>
             <button class="btn btn-primary btn-tam" type="submit">Giriş yap</button>
         </form>
+        <p class="giris-alt"><a href="<?= e(url('/admin/sifremi-unuttum')) ?>">Parolamı unuttum</a></p>
         <p class="giris-alt"><a href="<?= e(url('/')) ?>">← Siteye dön</a>
             <button type="button" class="ikon-dugme" id="tema-dugme" aria-label="Temayı değiştir">◐</button></p>
     </div>

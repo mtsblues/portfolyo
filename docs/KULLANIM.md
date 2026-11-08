@@ -130,6 +130,31 @@ Logo ve profil fotoğrafı alanlarına, önce **Medya**'ya yüklediğiniz dosyan
   4. Sonraki girişlerde parolanın ardından kod istenir. Aynı kod iki kez kullanılamaz; 5 yanlış denemede 15 dakika kilitlenir.
 - **Telefonu ve yedek kodları kaybederseniz** (sunucuya erişiminiz varsa): `php database/install.php --2fa-sifirla=eposta@adresiniz`
 
+## Güvenlik merkezi
+
+**Yönetim → Güvenlik**
+- **Açık oturumlar:** hangi cihaz/tarayıcı ve IP'den, ne zaman girildi. Tanımadığınız oturumu **Kapat**; hepsini birden **Diğerlerini kapat**. Kapatılan oturum bir sonraki istekte düşer. Parola değişince diğer oturumlar kendiliğinden kapanır.
+- **Denetim günlüğü:** girişler (başarılı/başarısız), parola ve 2FA değişiklikleri, yedek alma/indirme/geri yükleme, yönetici işlemleri. Yönetici herkesinkini, editör yalnızca kendi kayıtlarını görür. 365 günden eskileri bakım görevinde silinir.
+- **Yeni cihaz bildirimi:** daha önce kullanılmayan bir tarayıcıdan girişte e-posta gelir (SMTP gerekir). Ayarlar → Güvenlik.
+- **2FA zorunluluğu** (Ayarlar → Güvenlik): açıkken 2FA'sı olmayan kullanıcı, kurulum yapana kadar yalnızca Profil sayfasını görür. Kilitlenmemek için önce kendi 2FA'nızı açın (açmadan kaydedilmez).
+- **Parola sıfırlama:** giriş sayfasında “Parolamı unuttum” (SMTP + `APP_URL` gerekir). Bağlantı tek kullanımlıktır, 60 dakika geçerlidir, yalnızca özeti saklanır; kullanıcının var olup olmadığı yanıttan anlaşılmaz. Sıfırlayınca tüm oturumlar kapanır.
+
+## Yedekleme ve geri yükleme
+
+**Yönetim → Yedekleme** (yalnızca yönetici). Ayrıntılar ve komut satırı: [KURULUM.md](KURULUM.md#yedekleme-ve-geri-yükleme).
+1. **Şimdi yedek al** (isteğe bağlı: medya dahil). Liste: indir, geri yükle, dışarı gönder, sil.
+2. **Geri yükleme sihirbazı:** yedeği seçin → *kuru çalıştırma özeti* (tarih, şema, tablo/satır) → parolanız (+2FA) ve `GERI YUKLE` yazarak onay → mevcut durum otomatik yedeklenir → uygulanır → oturumunuz kapanır, yeniden girersiniz. Hata olursa önceki durum kendiliğinden döner.
+3. **Başka yerden yedek:** `.sql` / `.sql.gz` yükleyin; güvenlik denetiminden geçmezse reddedilir.
+4. **Otomatik yedek:** Ayarlar → Otomatik yedekleme (günlük/haftalık) + dış hedef (e-posta, FTP/FTPS, WebDAV).
+5. Sunucu taşıma: eski sitede yedek alın → yeni sitede kurulumu yapın → Yedekleme'den yedeği yükleyip geri yükleyin → medya arşivini de aynı şekilde.
+
+## Sayfalar ve KVKK
+
+**Yönetim → Sayfalar** (yalnızca yönetici): serbest Markdown sayfalar (`/sayfa/adres`) — gizlilik, aydınlatma metni, hizmet şartları, “Bu site hakkında”…; menüde ve/veya altbilgide gösterilir, taslak/yayında durumu vardır.
+- **Hazır şablonlar:** KVKK Aydınlatma Metni, Gizlilik ve Çerez Bildirimi, Bu Site Hakkında. Site adı, e-posta, mesaj saklama süresi ve IP politikasıyla doldurulup **taslak** oluşturulur. **Bunlar genel başlangıç metnidir, hukuki danışmanlık değildir**; yayımlamadan önce kendi durumunuza göre gözden geçirin.
+- **Ayarlar → Gizlilik ve KVKK:** yayındaki aydınlatma sayfasının adresini yazarsanız iletişim formunda **zorunlu onay kutusu** çıkar ve onay mesajla birlikte kaydedilir. *Mesaj saklama süresi* (gün) dolunca mesajlar bakım görevinde silinir. *IP saklama*: tam / kısaltılmış (önerilen) / hiç.
+- Site yalnızca oturum için gerekli çerez (yönetici girişi) ve tema tercihi için tarayıcı depolaması kullanır; üçüncü taraf izleyici yoktur.
+
 ## Kullanıcılar ve roller
 
 - **Yönetici (admin):** her şey (kullanıcılar, ayarlar dahil).

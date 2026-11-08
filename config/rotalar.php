@@ -27,6 +27,8 @@ return static function (Yonlendirici $r): void {
     $r->get('/iletisim', [IletisimController::class, 'index']);
     $r->post('/iletisim/gonder', [IletisimController::class, 'gonder']);
     $r->get('/yuklemeler/{dosya}', [YuklemeController::class, 'goster']);
+    $r->get('/sayfa/{slug}', [\App\Controllers\SayfaController::class, 'detay']);
+    $r->get('/bakim/{anahtar}', [\App\Controllers\BakimController::class, 'calistir']);
 
     // Tarayıcıdan kurulum (varsayılan kapalı; KURULUM_TOKEN tanımlıysa ve kullanıcı yoksa açılır)
     $r->get('/kurulum', [KurulumController::class, 'index']);
@@ -38,6 +40,12 @@ return static function (Yonlendirici $r): void {
     $r->post('/admin/cikis', [Admin\GirisController::class, 'cikis']);
     $r->get('/admin/giris/dogrula', [Admin\GirisController::class, 'dogrulaForm']);
     $r->post('/admin/giris/dogrula', [Admin\GirisController::class, 'dogrula']);
+
+    // Parola sıfırlama (e-posta ile, tek kullanımlık jeton)
+    $r->get('/admin/sifremi-unuttum', [Admin\GirisController::class, 'unuttum']);
+    $r->post('/admin/sifremi-unuttum', [Admin\GirisController::class, 'unuttumGonder']);
+    $r->get('/admin/sifre-sifirla/{jeton}', [Admin\GirisController::class, 'sifirlaForm']);
+    $r->post('/admin/sifre-sifirla/{jeton}', [Admin\GirisController::class, 'sifirla']);
 
     // Profil: parola değiştirme ve iki adımlı doğrulama
     $r->get('/admin/profil', [Admin\ProfilController::class, 'index']);
@@ -93,6 +101,30 @@ return static function (Yonlendirici $r): void {
     // Ayarlar
     $r->get('/admin/ayarlar', [Admin\AyarController::class, 'liste']);
     $r->post('/admin/ayarlar/guncelle', [Admin\AyarController::class, 'guncelle']);
+
+    // Serbest sayfalar (KVKK aydınlatma, gizlilik vb.)
+    $r->get('/admin/sayfalar', [Admin\SayfaController::class, 'liste']);
+    $r->get('/admin/sayfa/yeni', [Admin\SayfaController::class, 'yeni']);
+    $r->post('/admin/sayfa/yeni', [Admin\SayfaController::class, 'kaydet']);
+    $r->post('/admin/sayfa/sablondan', [Admin\SayfaController::class, 'sablondan']);
+    $r->get('/admin/sayfa/{id}/duzenle', [Admin\SayfaController::class, 'duzenle']);
+    $r->post('/admin/sayfa/{id}/guncelle', [Admin\SayfaController::class, 'guncelle']);
+    $r->post('/admin/sayfa/{id}/sil', [Admin\SayfaController::class, 'sil']);
+
+    // Güvenlik merkezi: oturumlar ve denetim günlüğü
+    $r->get('/admin/guvenlik', [Admin\GuvenlikController::class, 'index']);
+    $r->post('/admin/guvenlik/oturum/{anahtar}/kapat', [Admin\GuvenlikController::class, 'oturumKapat']);
+    $r->post('/admin/guvenlik/oturumlar/digerleri/kapat', [Admin\GuvenlikController::class, 'digerleriniKapat']);
+
+    // Yedekleme ve geri yükleme (yalnızca yönetici)
+    $r->get('/admin/yedekler', [Admin\YedekController::class, 'liste']);
+    $r->post('/admin/yedekler/al', [Admin\YedekController::class, 'al']);
+    $r->post('/admin/yedekler/yukle', [Admin\YedekController::class, 'yukle']);
+    $r->get('/admin/yedekler/{yedek}/indir', [Admin\YedekController::class, 'indir']);
+    $r->post('/admin/yedekler/{yedek}/sil', [Admin\YedekController::class, 'sil']);
+    $r->post('/admin/yedekler/{yedek}/gonder', [Admin\YedekController::class, 'gonder']);
+    $r->get('/admin/yedekler/{yedek}/geri-yukle', [Admin\YedekController::class, 'geriYuklemeForm']);
+    $r->post('/admin/yedekler/{yedek}/geri-yukle', [Admin\YedekController::class, 'geriYukle']);
 
     // Kullanıcılar
     $r->get('/admin/kullanicilar', [Admin\KullaniciController::class, 'liste']);

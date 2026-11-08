@@ -160,7 +160,7 @@ docker compose exec app php database/seed.php         # (isteğe bağlı) örnek
 Site: `http://localhost:8080` · Yönetim: `/admin/giris`.
 
 - MySQL portu dışarı açılmaz; yalnızca uygulama erişir. Yüklemeler, oturumlar ve yedekler adlandırılmış volume'larda kalır.
-- Yedek: `docker compose exec app php bin/yedekle.php --yuklemeler` (dosyalar `uygulama_yedek` volume'unda).
+- Yedek: `docker compose exec app php bin/yedekle.php --medya` (dosyalar `uygulama_yedek` volume'unda).
 - Güncelleme: `git pull && docker compose up -d --build && docker compose exec app php database/install.php`.
 - HTTPS arkasında yayınlarken `.env`: `SESSION_SECURE=true`, `HSTS=true`, `APP_DEBUG=false`, `APP_URL=https://...`.
 
@@ -220,30 +220,37 @@ Gönderim yanıt verildikten sonra yapılır; SMTP yavaş/hatalı olsa bile ziya
 
 ## Yedekleme ve geri yükleme
 
+**En kolay yol: panel.** Yönetim → **Yedekleme**: tek tıkla yedek, indirme, geri yükleme sihirbazı, yedek yükleme, e-posta/FTP/WebDAV'a gönderme. Otomatik zamanlama için Ayarlar → *Otomatik yedekleme*. Komut satırı da aynı motoru kullanır:
+
 ```bash
 php bin/yedekle.php                  # storage/yedekler/portfolyo-YYYYMMDD-HHMMSS.sql.gz
-php bin/yedekle.php --yuklemeler     # + yuklemeler-....zip (php zip eklentisi gerekir)
+php bin/yedekle.php --medya          # + medya-....tar.gz (yüklenen görsel/video; phar + zlib eklentisi)
+php bin/yedekle.php --dis            # ayarlı dış hedeflere (e-posta/FTP/WebDAV) de gönder
 php bin/yedekle.php --sakla=30       # en yeni 30 yedeği tut (varsayılan 14)
 ```
-mysqldump gerekmez. Yedek dosyaları yalnızca sahibi tarafından okunabilir (0600) ve web'den erişilemeyen `storage/` içindedir. **Yedekleri sunucu dışına da kopyalayın.**
+mysqldump gerekmez. Yedek dosyaları yalnızca sahibi tarafından okunabilir (0600) ve web'den erişilemeyen `storage/` içindedir. Yedekler **parola özetleri ve ziyaretçi mesajlarını** içerir; kimseyle paylaşmayın. **Yedekleri sunucu dışına da koyun (3-2-1 kuralı).**
 
-**Geri yükleme:**
+**Geri yükleme** (panel: Yedekleme → *Geri yükle*; ya da komut satırı):
 ```bash
-gunzip -c storage/yedekler/portfolyo-20261108-030000.sql.gz | mysql -u kullanici -p veritabani_adi
-# Windows/XAMPP:  C:\xampp\php\php.exe -r "echo gzdecode(file_get_contents($argv[1]));" yedek.sql.gz | C:\xampp\mysql\bin\mysql.exe -uroot portfolyo
+php bin/geri-yukle.php portfolyo-20261108-030000.sql.gz --kuru   # yalnızca doğrula, hiçbir şey değiştirme
+php bin/geri-yukle.php portfolyo-20261108-030000.sql.gz          # onay isteyerek uygula
+php bin/geri-yukle.php medya-20261108-030000.tar.gz              # medya arşivi
 ```
-Medya zip'ini `storage/yuklemeler/` içine açın.
+Güvenlik: dosya önce **kuru çalıştırmadan** geçer (yalnızca bu uygulamanın tablolarına ait `DROP/CREATE/INSERT` ifadeleri kabul edilir; `SELECT`, `GRANT`, alt sorgu, dosya yazma vb. reddedilir; en az bir yönetici kullanıcı gerekir). Uygulamadan hemen önce mevcut durum **otomatik yedeklenir** (`geriyukleme-oncesi-*`); bir hata olursa kendiliğinden geri alınır. Panel, parolanızı (+2FA kodunu) ve `GERI YUKLE` yazmanızı ister. Daha yeni sürümden alınmış yedek reddedilir; eski sürümden yedek geri yüklenince eksik tablo/sütunlar otomatik tamamlanır. Sunucuda `mysql` aracıyla elle geri yüklemek de mümkündür: `gunzip -c yedek.sql.gz | mysql -u kullanici -p veritabani_adi`.
 
-**Zamanlama**
-- Linux/macOS (cron): `0 3 * * * cd /var/www/portfolyo && php bin/yedekle.php --yuklemeler >> storage/logs/yedek.log 2>&1`
+**Dış hedefler** (`.env`; parolalar yalnızca burada durur, veritabanına yazılmaz) — `config/.env.example` içindeki `YEDEK_FTP_*`, `YEDEK_WEBDAV_*`; e-posta için `MAIL_*` (SMTP) yeterli. Panelde/Ayarlar'da hangi hedeflerin kullanılacağını açıp kapatırsınız. FTP/FTPS için `ftp` PHP eklentisi, WebDAV için HTTPS adresi gerekir.
+
+**Zamanlama / bakım** — `bin/bakim.php` günlük döndürme, eski kayıt/oturum temizliği, mesaj saklama süresi ve **otomatik yedeği** yürütür. Zamanlamak yerine kendiliğinden de çalışır (panel açıldığında ~20 saatte bir).
+- Linux/macOS (cron): `0 3 * * * cd /var/www/portfolyo && php bin/bakim.php >> storage/logs/bakim.log 2>&1`
 - Windows (Görev Zamanlayıcı):
   ```bat
-  schtasks /Create /SC DAILY /ST 03:00 /TN "Portfolyo Yedek" /TR "C:\xampp\php\php.exe C:\xampp\htdocs\portfolyo\bin\yedekle.php --yuklemeler"
+  schtasks /Create /SC DAILY /ST 03:00 /TN "Portfolyo Bakim" /TR "C:\xampp\php\php.exe C:\xampp\htdocs\portfolyo\bin\bakim.php"
   ```
+- **Cron/SSH yoksa** (paylaşımlı hosting, ücretsiz cron servisleri): `.env` içine `BAKIM_TOKEN=<en az 24 karakterlik harf-rakam>` yazın ve `https://alanadiniz.com/bakim/<BAKIM_TOKEN>` adresini günde bir çağırtın. Token yoksa adres 404 verir; saatte en çok 12 çağrı kabul edilir.
 
 ## Güncelleme
 
-1. Önce yedek alın: `php bin/yedekle.php --yuklemeler`
+1. Önce yedek alın: panelden *Yedekleme* ya da `php bin/yedekle.php --medya`
 2. Yeni sürümün dosyalarını üzerine kopyalayın (`git pull` ya da arşivi açın). **`.env` ve `storage/` korunur.**
 3. `php database/install.php` — mevcut verinize dokunmadan yeni tabloları/sütunları ekler ("Geçiş: …" satırları yazar).
    **SSH yoksa** bu adımı atlayabilirsiniz: yönetim paneline girdiğinizde şema geçişleri kendiliğinden uygulanır.
@@ -251,7 +258,10 @@ Medya zip'ini `storage/yuklemeler/` içine açın.
 
 ## Parola / 2FA sıfırlama
 
+**E-posta ayarlıysa** (`MAIL_*` + `APP_URL`): giriş sayfasındaki **“Parolamı unuttum”** ile tek kullanımlık, 60 dakika geçerli bağlantı gelir. Ayarlı değilse veya sunucuya erişiminiz varsa:
+
 ```bash
+php bin/parola-sifirla.php ben@ornek.com                   # rastgele geçici parola üretir (komut satırına parola yazılmaz)
 php database/install.php --parola-sifirla=ben@ornek.com
 php database/install.php --2fa-sifirla=ben@ornek.com      # telefonu ve yedek kodları kaybeden kullanıcı için
 php database/install.php --yeni-admin                      # ek yönetici oluştur

@@ -173,6 +173,20 @@ function ip_ikili(?string $ip = null): string
     return $ikili === false ? "\0\0\0\0" : $ikili;
 }
 
+/**
+ * Kişisel veriyi azaltmak için "ip_saklama" ayarına göre IP'yi (tam | kısaltılmış | hiç) ikili forma çevirir.
+ * Mesaj ve denetim kayıtları bunu kullanır; giriş kilitleri güvenlik için tam IP'yi (kısa süre) kullanmaya devam eder.
+ */
+function ip_sakla_ikili(?string $ip = null): string
+{
+    $ikili = ip_ikili($ip);
+    return match (ayar('ip_saklama', 'tam')) {
+        'yok'   => strlen($ikili) === 16 ? str_repeat("\0", 16) : "\0\0\0\0",
+        'kisa'  => strlen($ikili) === 4 ? substr($ikili, 0, 3) . "\0" : substr($ikili, 0, 8) . str_repeat("\0", 8),
+        default => $ikili,
+    };
+}
+
 function ip_metin(string $ikili): string
 {
     $m = @inet_ntop($ikili);

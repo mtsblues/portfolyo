@@ -42,13 +42,22 @@ final class IletisimController extends Denetleyici
             'konu'     => 'gerekli|min:3|max:180',
             'mesaj'    => 'gerekli|min:10|max:5000|cok_satir',
         ]);
-        if ($d->basarisiz()) {
-            $this->json(['basarili' => false, 'hata' => 'Lütfen form alanlarını kontrol edin.', 'alanlar' => $d->hatalar()], 422);
+        $hatalar = $d->hatalar();
+        // Aydınlatma metni yayında ise açık rıza/bilgilendirme onayı zorunludur (KVKK)
+        $kvkkSayfa = trim(Ayar::al('kvkk_sayfa'));
+        $kvkkGerekli = $kvkkSayfa !== '' && \App\Models\Sayfa::yayindaMi($kvkkSayfa);
+        if ($kvkkGerekli && ($_POST['kvkk_onay'] ?? '') !== '1') {
+            $hatalar['kvkk_onay'] = 'Devam etmek için aydınlatma metnini onaylayın.';
+        }
+        if ($hatalar !== []) {
+            $this->json(['basarili' => false, 'hata' => 'Lütfen form alanlarını kontrol edin.', 'alanlar' => $hatalar], 422);
         }
 
         $limit = max(1, (int) Ayar::al('iletisim_mesaj_ucret_siniri', '20'));
-        $ikili = ip_ikili($ip);
-        if (Mesaj::sonSaatteIpSayisi($ikili) >= $limit) {
+        // Saatlik sınır, saklanan (ip_saklama ayarına göre kısaltılmış) adrese göre sayılır.
+        // IP hiç saklanmıyorsa ('yok') veritabanı sınırı uygulanamaz; dosya tabanlı hız sınırı (yukarıda) geçerli kalır.
+        $ikili = ip_sakla_ikili($ip);
+        if (ayar('ip_saklama', 'tam') !== 'yok' && Mesaj::sonSaatteIpSayisi($ikili) >= $limit) {
             $this->json(['basarili' => false, 'hata' => 'Saatlik mesaj sınırına ulaştınız. Lütfen daha sonra tekrar deneyin.'], 429);
         }
 
@@ -56,7 +65,7 @@ final class IletisimController extends Denetleyici
         $eposta = mb_strtolower((string) $d->deger('eposta'), 'UTF-8');
         $konu = (string) $d->deger('konu');
         $mesaj = (string) $d->deger('mesaj');
-        Mesaj::olustur($ad, $eposta, $konu, $mesaj, $ikili);
+        Mesaj::olustur($ad, $eposta, $konu, $mesaj, ip_sakla_ikili($ip), $kvkkGerekli);
 
         // Mesaj kaydedildi. E-posta bildirimi yanıt gönderildikten SONRA yapılır; SMTP yavaş/hatalı olsa bile
         // ziyaretçi beklemez ve mesaj kaybolmaz (yine admin panelinde görünür).

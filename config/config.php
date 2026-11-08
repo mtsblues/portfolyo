@@ -68,5 +68,19 @@ return [
     'yedek' => [
         'dizin'  => KOK . '/storage/yedekler',
         'sakla'  => max(1, (int) Y::env('YEDEK_SAKLA', 14)),
+        // Dış yedek hedefleri (parolalar yalnızca .env'de tutulur, veritabanına yazılmaz)
+        'ftp' => [
+            'host' => (string) Y::env('YEDEK_FTP_HOST', ''), 'port' => (int) Y::env('YEDEK_FTP_PORT', 21),
+            'kullanici' => (string) Y::env('YEDEK_FTP_KULLANICI', ''), 'sifre' => (string) Y::env('YEDEK_FTP_SIFRE', ''),
+            'dizin' => (string) Y::env('YEDEK_FTP_DIZIN', '/'), 'ssl' => Y::envBool('YEDEK_FTP_SSL', true),
+        ],
+        'webdav' => [
+            'url' => rtrim((string) Y::env('YEDEK_WEBDAV_URL', ''), '/'),
+            'kullanici' => (string) Y::env('YEDEK_WEBDAV_KULLANICI', ''), 'sifre' => (string) Y::env('YEDEK_WEBDAV_SIFRE', ''),
+        ],
+    ],
+    // Web-cron adresi (cron/SSH olmayan hostingler için): https://alanadiniz.com/bakim/<BAKIM_TOKEN>
+    'bakim' => [
+        'token' => (string) Y::env('BAKIM_TOKEN', ''),
     ],
 ];

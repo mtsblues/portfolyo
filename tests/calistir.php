@@ -304,7 +304,7 @@ test('yeni rotalar eşleşir', function (): void {
     esit(404, $r->eslestir('GET', '/yuklemeler/' . str_repeat('ab', 16) . '.php')['durum']);
 });
 test('ayar alanları tutarlı (benzersiz anahtar, geçerli tip)', function (): void {
-    $gecerliTipler = ['text', 'email', 'number', 'url', 'yol', 'yol_dis', 'metin', 'onay'];
+    $gecerliTipler = ['text', 'email', 'number', 'url', 'yol', 'yol_dis', 'metin', 'onay', 'secim'];
     $gorulen = [];
     foreach (App\Models\Ayar::GRUPLAR as $g) {
         foreach ($g['alanlar'] as $anahtar => $a) {
@@ -521,6 +521,97 @@ test('bayt(): php.ini boyut yazımları', function (): void {
     esit(2 * 1073741824, App\Core\Saglik::bayt('2G'));
     esit(512 * 1024, App\Core\Saglik::bayt('512K'));
     esit(PHP_INT_MAX, App\Core\Saglik::bayt('-1'));
+});
+
+echo "\n== v1.3 Güvence\n";
+test('v1.3 rotaları eşleşir; jeton/yedek adı tipleri sıkı', function (): void {
+    $r = new Yonlendirici('');
+    (require KOK . '/config/rotalar.php')($r);
+    $jeton = str_repeat('ab', 32);
+    esit(200, $r->eslestir('GET', '/admin/sifre-sifirla/' . $jeton)['durum']);
+    esit(404, $r->eslestir('GET', '/admin/sifre-sifirla/' . substr($jeton, 1))['durum'], '63 hane');
+    esit(404, $r->eslestir('GET', '/admin/sifre-sifirla/' . strtoupper($jeton))['durum'], 'büyük harf');
+    foreach (['/admin/sifremi-unuttum', '/admin/yedekler', '/admin/guvenlik', '/admin/sayfalar', '/sayfa/gizlilik'] as $y) {
+        esit(200, $r->eslestir('GET', $y)['durum'], $y);
+    }
+    esit(200, $r->eslestir('GET', '/admin/yedekler/portfolyo-20260101-030000.sql.gz/indir')['durum']);
+    esit(404, $r->eslestir('GET', '/admin/yedekler/.env/indir')['durum'], 'noktayla başlayan ad');
+    esit(404, $r->eslestir('GET', '/admin/yedekler/a/indir')['durum'], 'çok kısa ad');
+    esit(404, $r->eslestir('GET', '/bakim/kisa')['durum'], 'kısa bakım anahtarı');
+    esit(405, $r->eslestir('GET', '/admin/yedekler/al')['durum'], 'yedek alma yalnızca POST');
+    esit(405, $r->eslestir('GET', '/admin/guvenlik/oturumlar/digerleri/kapat')['durum']);
+});
+test('SifreSifirlama: biçimsiz jeton veritabanına gitmeden reddedilir', function (): void {
+    foreach (['', 'abc', str_repeat('g', 64), str_repeat('a', 63), str_repeat('a', 65), '../../etc/passwd'] as $j) {
+        esit(null, App\Core\SifreSifirlama::dogrula($j), 'jeton: ' . $j);
+    }
+});
+test('Yedek::dogrula: yedek olmayan ve zararlı SQL içeren dosyalar reddedilir', function (): void {
+    $dizin = sys_get_temp_dir() . '/portfolyo-test-' . bin2hex(random_bytes(4));
+    mkdir($dizin);
+    $baslik = "-- Portfolyo yedeği · 2026-01-01 00:00:00 UTC\n-- sema_surumu: " . App\Core\Kurulum::SEMA_SURUMU . "\nSET NAMES utf8mb4;\n";
+    $vakalar = [
+        'baslik-yok'    => "SELECT 1;\n",
+        'select'        => $baslik . "SELECT * FROM kullanicilar;\n",
+        'drop-db'       => $baslik . "DROP DATABASE portfolyo;\n",
+        'yabanci-tablo' => $baslik . "DROP TABLE IF EXISTS `mysql.user`;\n",
+        'grant'         => $baslik . "GRANT ALL ON *.* TO 'x'@'%';\n",
+        'altsorgu'      => $baslik . "INSERT INTO `ayarlar` VALUES ('a', (SELECT password FROM kullanicilar));\n",
+        'dosya-yaz'     => $baslik . "SELECT 'x' INTO OUTFILE '/tmp/x';\n",
+        'yigin'         => $baslik . "SET FOREIGN_KEY_CHECKS=0; DROP TABLE x;\n",
+        'yeni-tablo'    => $baslik . "CREATE TABLE `evil` (id INT);\n",
+        'yonetici-yok'  => $baslik . "DROP TABLE IF EXISTS `ayarlar`;\n",
+    ];
+    foreach ($vakalar as $ad => $icerik) {
+        $yol = $dizin . '/' . $ad . '.sql';
+        file_put_contents($yol, $icerik);
+        $r = App\Core\Yedek::dogrula($yol);
+        dogru($r['ok'] === false, 'kabul edildi: ' . $ad);
+        dogru($r['hatalar'] !== [], 'hata mesajı yok: ' . $ad);
+        unlink($yol);
+    }
+    rmdir($dizin);
+});
+test('Yedek::yol: yol gezdirme ve geçersiz adlar reddedilir', function (): void {
+    foreach (['../.env', '..\\.env', '.env', 'a', 'x.php', 'portfolyo-1.sql.gz/../../.env', "portfolyo-1.sql.gz\0.php"] as $ad) {
+        esit(null, App\Core\Yedek::yol($ad), 'ad: ' . $ad);
+    }
+});
+test('SayfaSablonlari: tüm şablonlar site bilgisiyle dolar, yer tutucu kalmaz', function (): void {
+    foreach (array_keys(App\Core\SayfaSablonlari::liste()) as $anahtar) {
+        $m = App\Core\SayfaSablonlari::icerik($anahtar, ['site_baslik' => 'Örnek Site', 'site_eposta' => 'ben@ornek.test', 'mesaj_saklama_gun' => '90']);
+        dogru(str_contains($m, 'Örnek Site') && str_contains($m, 'ben@ornek.test'), 'site bilgisi yok: ' . $anahtar);
+        dogru(!str_contains($m, '{{') && !str_contains($m, '%s') && !str_contains($m, '$site'), 'yer tutucu kaldı: ' . $anahtar);
+        dogru(mb_strlen($m) > 120, 'şablon çok kısa: ' . $anahtar);
+    }
+});
+test('Denetim::etiket: bilinen kod Türkçe, bilinmeyen kod olduğu gibi', function (): void {
+    esit('Giriş yapıldı', App\Core\Denetim::etiket('giris.basarili'));
+    esit('bilinmeyen.olay', App\Core\Denetim::etiket('bilinmeyen.olay'));
+});
+test('ayar tanımları: secim seçenekleri ve sayı aralıkları geçerli', function (): void {
+    foreach (App\Models\Ayar::GRUPLAR as $g) {
+        foreach ($g['alanlar'] as $anahtar => $a) {
+            if ($a[1] === 'secim') {
+                dogru(is_array($a[5] ?? null) && $a[5] !== [], 'secim seçeneği yok: ' . $anahtar);
+            }
+            if ($a[1] === 'number' && isset($a[5])) {
+                dogru(is_int($a[5][0]) && is_int($a[5][1]) && $a[5][0] <= $a[5][1], 'aralık hatalı: ' . $anahtar);
+            }
+        }
+    }
+    foreach (['kvkk_sayfa', 'mesaj_saklama_gun', 'ip_saklama', 'zorunlu_2fa', 'yeni_cihaz_bildirimi', 'otomatik_yedek_gun', 'yedek_eposta', 'yedek_ftp', 'yedek_webdav', 'yedek_medya_dahil'] as $k) {
+        dogru(isset(App\Models\Ayar::alanlar()[$k]), 'ayar tanımı yok: ' . $k);
+    }
+});
+test('şema: v1.3 tabloları ve varsayılan ayarlar schema.sql içinde', function (): void {
+    $sql = (string) file_get_contents(KOK . '/database/schema.sql');
+    foreach (['denetim_gunlugu', 'sifre_sifirlama', 'oturumlar', 'sayfalar'] as $t) {
+        dogru(str_contains($sql, 'CREATE TABLE IF NOT EXISTS `' . $t . '`'), 'tablo yok: ' . $t);
+    }
+    foreach (array_keys(App\Models\Ayar::alanlar()) as $k) {
+        dogru(str_contains($sql, "('" . $k . "'"), 'varsayılan ayar yok: ' . $k);
+    }
 });
 
 echo "\n";

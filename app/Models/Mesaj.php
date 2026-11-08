@@ -10,11 +10,11 @@ final class Mesaj extends Model
 {
     protected const TABLO = 'mesajlar';
 
-    public static function olustur(string $adSoyad, string $eposta, string $konu, string $mesaj, string $ipIkili): int
+    public static function olustur(string $adSoyad, string $eposta, string $konu, string $mesaj, string $ipIkili, bool $kvkkOnay = false): int
     {
         Veritabani::calistir(
-            'INSERT INTO mesajlar (ad_soyad, eposta, konu, mesaj, ip_adresi) VALUES (?, ?, ?, ?, ?)',
-            [$adSoyad, $eposta, $konu, $mesaj, $ipIkili]
+            'INSERT INTO mesajlar (ad_soyad, eposta, konu, mesaj, ip_adresi, kvkk_onay) VALUES (?, ?, ?, ?, ?, ?)',
+            [$adSoyad, $eposta, $konu, $mesaj, $ipIkili, $kvkkOnay ? 1 : 0]
         );
         return Veritabani::sonId();
     }

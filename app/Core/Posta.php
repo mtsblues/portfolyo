@@ -18,9 +18,10 @@ final class Posta
     }
 
     /**
+     * @param list<array{ad:string,icerik:string,tur?:string}> $ekler isteğe bağlı ek dosyalar (örn. yedek)
      * @return array{ok:bool,hata:?string}
      */
-    public static function gonder(string $alici, string $konu, string $metin, ?string $yanitAdresi = null, ?string $yanitAdi = null): array
+    public static function gonder(string $alici, string $konu, string $metin, ?string $yanitAdresi = null, ?string $yanitAdi = null, array $ekler = []): array
     {
         $c = (array) config('posta', []);
         $host = trim((string) ($c['host'] ?? ''));
@@ -48,15 +49,33 @@ final class Posta
             'Subject: ' . self::kodlaAd(self::temizle($konu)),
             'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . (preg_replace('/^.*@/', '', $gonderen) ?: 'localhost') . '>',
             'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: base64',
             'X-Mailer: Portfolyo',
         ];
+        $sinir = $ekler !== [] ? 'portfolyo-' . bin2hex(random_bytes(12)) : '';
+        $baslik[] = $ekler !== []
+            ? 'Content-Type: multipart/mixed; boundary="' . $sinir . '"'
+            : 'Content-Type: text/plain; charset=UTF-8';
+        if ($ekler === []) {
+            $baslik[] = 'Content-Transfer-Encoding: base64';
+        }
         $yanit = $yanitAdresi !== null ? self::adres($yanitAdresi) : null;
         if ($yanit !== null) {
             $baslik[] = 'Reply-To: ' . ($yanitAdi !== null && trim($yanitAdi) !== '' ? self::kodlaAd(self::temizle($yanitAdi)) . ' ' : '') . '<' . $yanit . '>';
         }
-        $govde = implode("\r\n", $baslik) . "\r\n\r\n" . chunk_split(base64_encode(str_replace(["\r\n", "\r"], "\n", $metin)), 76, "\r\n");
+        $metinB64 = chunk_split(base64_encode(str_replace(["\r\n", "\r"], "\n", $metin)), 76, "\r\n");
+        if ($ekler === []) {
+            $govde = implode("\r\n", $baslik) . "\r\n\r\n" . $metinB64;
+        } else {
+            $govde = implode("\r\n", $baslik) . "\r\n\r\n--" . $sinir . "\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . $metinB64;
+            foreach ($ekler as $ek) {
+                // dosya adı başlığa girer: kontrol karakterleri ve tırnak temizlenir (başlık enjeksiyonu koruması)
+                $ad = (string) preg_replace('/[^A-Za-z0-9._-]+/', '_', basename((string) $ek['ad']));
+                $govde .= "--" . $sinir . "\r\nContent-Type: " . (preg_match('#^[a-z]+/[a-z0-9.+-]+$#i', (string) ($ek['tur'] ?? '')) === 1 ? $ek['tur'] : 'application/octet-stream')
+                    . '; name="' . $ad . "\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"" . $ad . "\"\r\n\r\n"
+                    . chunk_split(base64_encode((string) $ek['icerik']), 76, "\r\n");
+            }
+            $govde .= '--' . $sinir . "--\r\n";
+        }
 
         $f = null;
         try {

@@ -21,10 +21,18 @@ def temizle(kod):
     """Dizge ve yorumları boşlukla değiştirir (satır sayısı korunur)."""
     cikti = []
     i, n = 0, len(kod)
+    heredoc = re.compile(r"<<<[ \t]*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1[ \t]*\n")
     while i < n:
         c = kod[i]
         two = kod[i:i + 2]
-        if two == '//' or c == '#' and kod[i:i + 2] != '#[':
+        m = heredoc.match(kod, i) if c == '<' else None
+        if m:
+            # heredoc/nowdoc gövdesi: kapanış etiketine kadar tamamı dizge sayılır
+            kapanis = re.compile(r'^[ \t]*' + re.escape(m.group(2)) + r'\b', re.M).search(kod, m.end())
+            j = kapanis.end() if kapanis else n
+            cikti.append('S' + '\n' * kod[i:j].count('\n'))
+            i = j
+        elif two == '//' or c == '#' and kod[i:i + 2] != '#[':
             j = kod.find('\n', i)
             j = n if j == -1 else j
             i = j

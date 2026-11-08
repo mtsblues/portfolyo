@@ -33,7 +33,10 @@ Site adı, ana sayfa başlığı, "Hakkımda", sosyal bağlantılar, logo ve pay
 - Dashboard, makale / proje / kategori / etiket / mesaj / kullanıcı yönetimi, roller (admin, editör)
 - **İki adımlı doğrulama (TOTP)** — Google/Microsoft Authenticator, Authy, Bitwarden, 1Password… yedek kodlarla
 - Brute-force kilidi, güçlü parola politikası, kendi parolasını değiştirme
-- **Yedekleme** (`bin/yedekle.php`, mysqldump gerekmez) ve veri kaybı olmadan **güncelleme** (SSH olmadan da: panele girince şema otomatik güncellenir)
+- **Yedekleme ve geri yükleme sihirbazı** (panelden tek tık; mysqldump gerekmez): kuru çalıştırma doğrulaması, geri yüklemeden önce otomatik yedek + hata olursa geri alma, otomatik zamanlama, **e-posta / FTP(S) / WebDAV ile dış yedek**
+- **Güvenlik merkezi:** açık oturumlar (uzaktan kapatma), denetim günlüğü, e-postayla **parola sıfırlama**, yeni cihaz bildirimi, zorunlu 2FA seçeneği
+- **Sayfalar + KVKK:** serbest sayfalar, hazır aydınlatma/gizlilik şablonları, iletişim formunda onay kutusu, mesaj saklama süresi, IP kısaltma
+- Veri kaybı olmadan **güncelleme** (SSH olmadan da: panele girince şema otomatik güncellenir) ve **bakım görevleri** (günlük döndürme, temizlik; cron ya da web-cron)
 - **Tarayıcıdan kurulum sihirbazı** (SSH olmayan hostingler için; varsayılan kapalı, token korumalı) ve panelde **canlı ortam kontrolü** (debug açık, HTTPS yok, proxy ayarı eksik, `install.php` duruyor…)
 
 **Güvenlik** (ayrıntı: [SECURITY.md](SECURITY.md))
@@ -77,7 +80,10 @@ Tüm sunucu ayarları `.env` dosyasındadır (şablon: [`config/.env.example`](c
 php database/install.php                      # kur / güncelle (veri korunur)
 php database/install.php --parola-sifirla=a@b.c   # parola sıfırla
 php database/install.php --2fa-sifirla=a@b.c      # telefonunu kaybeden kullanıcının 2FA'sını kapat
-php bin/yedekle.php [--yuklemeler]            # veritabanı (+ medya) yedeği → storage/yedekler/
+php bin/yedekle.php [--medya] [--dis]         # veritabanı (+ medya) yedeği → storage/yedekler/ (+ dış hedefler)
+php bin/geri-yukle.php <dosya> [--kuru]       # yedekten geri yükle (önce doğrular, öncesinde otomatik yedek alır)
+php bin/bakim.php                             # bakım görevleri (cron: günde bir)
+php bin/parola-sifirla.php a@b.c              # sunucudan parola sıfırla (geçici parola üretir)
 php bin/eposta-test.php [alici@adres.com]     # SMTP ayarlarını sına
 php tests/calistir.php                        # otomatik testler (veritabanı gerekmez)
 python tests/statik_kontrol.py                # PHP'siz hızlı tutarlılık denetimi (isteğe bağlı)

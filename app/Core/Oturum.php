@@ -134,6 +134,11 @@ final class Oturum
         $_SESSION['_son'] = $simdi;
         $_SESSION['_yenileme'] = $simdi;
         Csrf::yenile();
+        try { // uzaktan sonlandırma için oturumu izle (hata girişi engellemez)
+            \App\Models\OturumKaydi::baslat((int) $kullanici['id']);
+        } catch (\Throwable $t) {
+            gunluk('Oturum izleme kaydı yazılamadı: ' . $t->getMessage());
+        }
     }
 
     /** Parola doğrulandı, iki adımlı kod bekleniyor (5 dakika geçerli). */
@@ -166,6 +171,11 @@ final class Oturum
 
     public static function cikis(): void
     {
+        try {
+            \App\Models\OturumKaydi::bitir();
+        } catch (\Throwable $t) {
+            gunluk('Oturum izleme kaydı kapatılamadı: ' . $t->getMessage());
+        }
         self::yokEt();
         session_start();
         session_regenerate_id(true);

@@ -39,6 +39,36 @@ abstract class Denetleyici
         exit;
     }
 
+    /**
+     * Yönlendirmeyi hemen gönderir (bağlantıyı kapatır), ardından $sonra işini yürütür.
+     * Yavaş/zamanı değişken işler (e-posta gönderme, parola sıfırlama jetonu) yanıt süresini etkilemesin;
+     * böylece "kullanıcı var mı?" bilgisi yanıt süresinden sızmaz.
+     */
+    protected function yonlendirSonra(string $yol, callable $sonra): never
+    {
+        if ($yol === '' || $yol[0] !== '/' || str_starts_with($yol, '//') || preg_match('/[\r\n\\\\]/', $yol) === 1) {
+            $yol = '/';
+        }
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        ignore_user_abort(true);
+        header('Location: ' . url($yol), true, 302);
+        header('Content-Length: 0');
+        header('Connection: close');
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } else {
+            flush();
+        }
+        try {
+            $sonra();
+        } catch (\Throwable $t) {
+            gunluk('Yanıt sonrası işlem hatası: ' . $t->getMessage());
+        }
+        exit;
+    }
+
     protected function hata(int $kod, string $mesaj = ''): void
     {
         $basliklar = [

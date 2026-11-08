@@ -27,6 +27,10 @@ Yalnızca en güncel sürüm düzeltme alır. Güncelleme: [docs/KURULUM.md](doc
 | E-posta | CR/LF başlık enjeksiyonuna karşı temizleme ve adres doğrulama, TLS sertifika doğrulaması |
 | Hız sınırı | İletişim formu, giriş denemeleri ve kurulum sihirbazı |
 | Kurulum sihirbazı | Varsayılan **kapalı**; yalnızca `.env` içinde ≥16 karakterlik `KURULUM_TOKEN` varsa ve veritabanında hiç kullanıcı yokken açılır (aksi halde 404), anahtar `hash_equals` ile doğrulanır, ilk yönetici oluşunca kapanır |
+| Parola sıfırlama | 256 bit rastgele jeton, veritabanında yalnızca SHA-256 özeti, 60 dk, tek kullanımlık (yarışa karşı atomik tüketim); yanıt kullanıcının varlığını ele vermez (aynı mesaj, jeton/e-posta işi yanıttan SONRA); bağlantı `APP_URL`'den üretilir (Host başlığı sahteciliği yok); `Referrer-Policy: no-referrer`; sıfırlayınca tüm oturumlar kapanır |
+| Oturum izleme | Oturum başına rastgele izleme anahtarı (özeti saklanır); uzaktan kapatma bir sonraki istekte etkilidir; parola değişince diğer oturumlar kapanır |
+| Denetim günlüğü | Giriş/çıkış, başarısız deneme, parola/2FA, yedek ve tüm yönetici işlemleri; IP `ip_saklama` ayarına uyar (tam/kısaltılmış/yok) |
+| Yedek / geri yükleme | Yalnızca yönetici; geri yükleme parola (+2FA) ve yazılı onay ister; yedek dosyası **katı beyaz liste** ile doğrulanır (yalnızca uygulamanın tabloları için `DROP/CREATE/INSERT`; `SELECT`, `GRANT`, alt sorgu, dosya yazma, yığınlı ifade reddedilir); öncesinde otomatik yedek, hata olursa geri alma; indirme/geri yükleme adları yol gezdirmeye karşı doğrulanır; dış hedef parolaları yalnızca `.env`'de |
 | Bilgi sızdırma | Üretimde hata ayrıntısı gösterilmez; günlüğe yazılır. `.env`, `app/`, `config/`, `storage/`, `bin/` web'den erişilemez |
 
 ## Dağıtım sahibi olarak sizin sorumluluklarınız
@@ -35,6 +39,7 @@ Yalnızca en güncel sürüm düzeltme alır. Güncelleme: [docs/KURULUM.md](doc
 - Yönetici hesapları için **2FA** açın, güçlü ve benzersiz parola kullanın.
 - `database/install.php` ve `database/seed.php` dosyalarını canlıdan kaldırın; `.env` izni `600` olsun; kurulum bittiyse `KURULUM_TOKEN` satırını silin.
 - Cloudflare/ters vekil arkasındaysanız `GUVENILIR_PROXY=true` yapın (hız sınırı ve oturum bağlama gerçek IP'yi görsün). Panelin **Canlı ortam kontrolü** kartı bunları ve diğer yanlış ayarları sizin için denetler.
-- Düzenli **yedek** alın (`php bin/yedekle.php`) ve yedekleri sunucu dışında saklayın.
+- Düzenli **yedek** alın (Ayarlar → Otomatik yedekleme ya da `php bin/yedekle.php`) ve yedekleri sunucu dışında saklayın (e-posta/FTP/WebDAV hedefi). Yedekler parola özetleri ve ziyaretçi mesajları içerir.
+- İletişim formu kişisel veri topluyorsa aydınlatma metni yayınlayın (Sayfalar → hazır şablonlar). Şablonlar genel bir başlangıçtır, hukuki danışmanlık değildir.
 - PHP ve veritabanını güncel tutun.
 - Ayrıntılı liste: [docs/KURULUM.md → Canlıya çıkış kontrol listesi](docs/KURULUM.md#canlıya-çıkış-kontrol-listesi).

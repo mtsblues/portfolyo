@@ -130,6 +130,62 @@ CREATE TABLE IF NOT EXISTS `medyalar` (
     INDEX `idx_medya_tur` (`tur`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Denetim günlüğü: yönetici eylemleri ve giriş olayları (kim, ne, ne zaman)
+CREATE TABLE IF NOT EXISTS `denetim_gunlugu` (
+    `id`           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `kullanici_id` BIGINT UNSIGNED NULL,
+    `eylem`        VARCHAR(60) NOT NULL,
+    `hedef`        VARCHAR(190) NULL,
+    `ayrinti`      VARCHAR(500) NULL,
+    `ip_adresi`    VARBINARY(16) NULL,
+    `olusturulma`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_denetim_zaman` (`olusturulma`),
+    INDEX `idx_denetim_eylem` (`eylem`, `olusturulma`),
+    INDEX `idx_denetim_kullanici` (`kullanici_id`, `olusturulma`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Parola sıfırlama bağlantıları (yalnızca SHA-256 özeti saklanır; tek kullanımlık ve süreli)
+CREATE TABLE IF NOT EXISTS `sifre_sifirlama` (
+    `id`           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `kullanici_id` BIGINT UNSIGNED NOT NULL,
+    `token_ozeti`  CHAR(64) NOT NULL,
+    `son_kullanma` DATETIME NOT NULL,
+    `kullanildi`   TINYINT(1) NOT NULL DEFAULT 0,
+    `ip_adresi`    VARBINARY(16) NULL,
+    `olusturulma`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_sifirlama_token` (`token_ozeti`),
+    INDEX `idx_sifirlama_kullanici` (`kullanici_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Aktif yönetici oturumları (uzaktan sonlandırma için). Oturum kimliğinin kendisi değil, rastgele bir izleme anahtarının özeti saklanır.
+CREATE TABLE IF NOT EXISTS `oturumlar` (
+    `anahtar_ozeti` CHAR(64) PRIMARY KEY,
+    `kullanici_id`  BIGINT UNSIGNED NOT NULL,
+    `ip_adresi`     VARBINARY(16) NULL,
+    `tarayici`      VARCHAR(255) NULL,
+    `olusturulma`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `son_aktivite`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `iptal`         TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX `idx_oturum_kullanici` (`kullanici_id`, `iptal`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Serbest sayfalar: gizlilik/aydınlatma metni, "Bu site hakkında" vb.
+CREATE TABLE IF NOT EXISTS `sayfalar` (
+    `id`            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `baslik`        VARCHAR(180) NOT NULL,
+    `slug`          VARCHAR(180) NOT NULL,
+    `icerik`        LONGTEXT NOT NULL,
+    `durum`         ENUM('taslak','yayinda') NOT NULL DEFAULT 'taslak',
+    `menude`        TINYINT(1) NOT NULL DEFAULT 0,
+    `altbilgide`    TINYINT(1) NOT NULL DEFAULT 0,
+    `sira`          INT NOT NULL DEFAULT 0,
+    `meta_aciklama` VARCHAR(300) NULL,
+    `olusturulma`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `guncellenme`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_sayfa_slug` (`slug`),
+    INDEX `idx_sayfa_durum` (`durum`, `sira`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Varsayılan ayarlar (admin panelinden düzenlenebilir). Mevcut değerlerin üzerine YAZILMAZ.
 INSERT IGNORE INTO `ayarlar` (`anahtar`, `deger`) VALUES
     ('site_baslik', 'Portfolyom'),
@@ -152,6 +208,16 @@ INSERT IGNORE INTO `ayarlar` (`anahtar`, `deger`) VALUES
     ('sosyal_instagram', ''),
     ('site_logo', ''),
     ('og_gorsel', ''),
-    ('altbilgi_metin', '');
+    ('altbilgi_metin', ''),
+    ('kvkk_sayfa', ''),
+    ('mesaj_saklama_gun', '0'),
+    ('ip_saklama', 'tam'),
+    ('zorunlu_2fa', '0'),
+    ('yeni_cihaz_bildirimi', '1'),
+    ('otomatik_yedek_gun', '0'),
+    ('yedek_medya_dahil', '0'),
+    ('yedek_eposta', '0'),
+    ('yedek_ftp', '0'),
+    ('yedek_webdav', '0');
 
 SET FOREIGN_KEY_CHECKS = 1;

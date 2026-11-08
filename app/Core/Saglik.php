@@ -64,6 +64,9 @@ final class Saglik
             'zip'            => extension_loaded('zip'),
             'smtp'           => trim((string) config('posta.host', '')) !== '',
             'son_yedek'      => $sonYedek,
+            'oto_yedek'      => (int) \App\Models\Ayar::al('otomatik_yedek_gun', '0') > 0,
+            'dis_hedef'      => Yedek::hedefler() !== [],
+            'kvkk'           => trim(\App\Models\Ayar::al('kvkk_sayfa')) !== '',
             'simdi'          => time(),
             'php'            => PHP_VERSION,
         ];
@@ -142,7 +145,7 @@ final class Saglik
             $ekle(self::UYARI, 'PHP yükleme sınırı video sınırından küçük', 'PHP: ' . (int) ((int) $o['php_yukleme_bayt'] / 1048576) . ' MB, video sınırı: ' . (int) ((int) $o['video_siniri_bayt'] / 1048576) . ' MB. upload_max_filesize/post_max_size değerlerini yükseltin ya da YUKLEME_VIDEO_MAX_MB değerini düşürün.');
         }
         $o['gd'] ?: $ekle(self::BILGI, 'PHP gd eklentisi yok', 'Çok büyük görseller küçültülmez (konum bilgisi yine de silinir).');
-        $o['zip'] ?: $ekle(self::BILGI, 'PHP zip eklentisi yok', 'bin/yedekle.php --yuklemeler medya arşivi oluşturamaz.');
+        (extension_loaded('phar') && extension_loaded('zlib')) ?: $ekle(self::BILGI, 'PHP phar/zlib eklentisi yok', 'Medya (görsel/video) yedeği alınamaz; veritabanı yedeği etkilenmez. storage/yuklemeler klasörünü elle kopyalayın.');
         $o['smtp'] ? $ekle(self::OK, 'E-posta bildirimi (SMTP) ayarlı') : $ekle(self::BILGI, 'E-posta bildirimi ayarlı değil', 'Mesajlar yalnızca panelde görünür. İsterseniz .env içindeki MAIL_* alanlarını doldurun.');
 
         // Yedek
@@ -153,6 +156,16 @@ final class Saglik
             $ekle(self::UYARI, 'Son yedek ' . (int) ($yas / 86400) . ' gün önce alınmış', 'Yedeklemeyi zamanlayın (cron / Görev Zamanlayıcı).');
         } else {
             $ekle(self::OK, 'Yedek güncel');
+        }
+
+        if ($canli && isset($o['oto_yedek']) && !$o['oto_yedek']) {
+            $ekle(self::BILGI, 'Otomatik yedek kapalı', 'Ayarlar → Otomatik yedekleme bölümünden günlük/haftalık yedeği açın.');
+        }
+        if ($canli && isset($o['dis_hedef']) && !$o['dis_hedef']) {
+            $ekle(self::UYARI, 'Yedekler yalnızca bu sunucuda duruyor', 'Sunucu bozulursa yedekler de gider. E-posta, FTP veya WebDAV hedefi tanımlayın (.env; docs/KULLANIM.md → Yedekleme).');
+        }
+        if ($canli && isset($o['kvkk']) && !$o['kvkk']) {
+            $ekle(self::BILGI, 'KVKK aydınlatma metni bağlı değil', 'İletişim formu kişisel veri topluyor. Sayfalar → Hazır şablonlar’dan oluşturup yayınlayın, sonra Ayarlar → Gizlilik’te adresini yazın.');
         }
 
         $sira = [self::KRITIK => 0, self::UYARI => 1, self::BILGI => 2, self::OK => 3];

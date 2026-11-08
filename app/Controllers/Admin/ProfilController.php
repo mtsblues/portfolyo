@@ -59,7 +59,9 @@ final class ProfilController extends AdminTemel
         }
         Kullanici::parolaGuncelle($this->kullanici['id'], $yeni);
         session_regenerate_id(true);
-        $this->geriDon('/admin/profil', 'basari', 'Parolanız güncellendi.');
+        $kapanan = \App\Models\OturumKaydi::digerleriniKapat($this->kullanici['id']);
+        \App\Core\Denetim::kaydet('parola.degisti', $this->kullanici['eposta'], null, $this->kullanici['id']);
+        $this->geriDon('/admin/profil', 'basari', 'Parolanız güncellendi.' . ($kapanan > 0 ? ' Diğer ' . $kapanan . ' oturum kapatıldı.' : ''));
     }
 
     public function ikiAdimBaslat(): void
@@ -90,6 +92,7 @@ final class ProfilController extends AdminTemel
             $adim
         );
         unset($_SESSION['_totp_kurulum']);
+        \App\Core\Denetim::kaydet('2fa.acildi', $this->kullanici['eposta'], null, $this->kullanici['id']);
         Oturum::flash('yedek_kodlar', $kodlar);
         $this->geriDon('/admin/profil', 'basari', 'İki adımlı doğrulama etkinleştirildi. Yedek kodlarınızı güvenli bir yere kaydedin.');
     }
@@ -102,6 +105,7 @@ final class ProfilController extends AdminTemel
             $this->geriDon('/admin/profil', 'hata', 'Parola hatalı; doğrulama kapatılmadı.');
         }
         Kullanici::totpKapat($this->kullanici['id']);
+        \App\Core\Denetim::kaydet('2fa.kapandi', $this->kullanici['eposta'], null, $this->kullanici['id']);
         $this->geriDon('/admin/profil', 'basari', 'İki adımlı doğrulama kapatıldı.');
     }
 }

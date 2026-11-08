@@ -73,6 +73,9 @@ final class AnaSayfaController extends Denetleyici
         foreach (Kategori::yayindakiler() as $k) {
             $ekle('/kategori/' . $k['slug']);
         }
+        foreach (\App\Models\Sayfa::sitemapIcin() as $sf) {
+            $ekle('/sayfa/' . $sf['slug'], (string) $sf['guncellenme']);
+        }
         echo $xml . '</urlset>';
     }
 

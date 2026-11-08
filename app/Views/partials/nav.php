@@ -14,6 +14,9 @@
             <a href="<?= e(url('/projeler')) ?>"<?= menu_aktif('/projeler') ?>>Projeler</a>
             <a href="<?= e(url('/blog')) ?>"<?= menu_aktif('/blog') ?>>Bilgi Kütüphanesi</a>
             <?php if (hakkimda_var()): ?><a href="<?= e(url('/hakkimda')) ?>"<?= menu_aktif('/hakkimda') ?>>Hakkımda</a><?php endif; ?>
+            <?php foreach (\App\Models\Sayfa::menu() as $sf): ?>
+                <a href="<?= e(url('/sayfa/' . $sf['slug'])) ?>"<?= menu_aktif('/sayfa/' . $sf['slug']) ?>><?= e((string) $sf['baslik']) ?></a>
+            <?php endforeach; ?>
             <a href="<?= e(url('/iletisim')) ?>"<?= menu_aktif('/iletisim') ?>>İletişim</a>
             <button type="button" class="ikon-dugme" id="tema-dugme" aria-label="Temayı değiştir">◐</button>
         </nav>

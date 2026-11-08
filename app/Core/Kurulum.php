@@ -20,7 +20,7 @@ final class Kurulum
      * Veritabanı şeması sürümü. schema.sql / migrasyon.php'ye yeni tablo veya sütun eklendiğinde BİR ARTIRIN:
      * yönetici panele girdiğinde sürüm farkı otomatik fark edilir ve geçişler uygulanır (SSH gerektirmez).
      */
-    public const SEMA_SURUMU = 2;
+    public const SEMA_SURUMU = 3;
 
     /** Kayıtlı şema sürümü eskiyse geçişleri uygular. Hata verirse siteyi bozmaz, günlüğe yazar. */
     public static function otomatikGuncelle(): void

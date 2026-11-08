@@ -13,7 +13,9 @@ final class Ayar
      * Tipler: text | email | number | url | yol (yalnızca site içi /yuklemeler/... — sayfada gösterilir, CSP harici görseli engeller) |
      *        yol_dis (site içi yol ya da https adresi — yalnızca meta etiketine yazılır) | metin (çok satır, Markdown) | onay
      *
-     * @var array<string,array{baslik:string,aciklama:string,alanlar:array<string,array{0:string,1:string,2:int,3:bool,4:string}>}>
+     * 'secim' tipi: 6. öğe [değer => etiket]. 'number' tipi: 6. öğe [en az, en çok] (isteğe bağlı).
+     *
+     * @var array<string,array{baslik:string,aciklama:string,alanlar:array<string,array<int,mixed>>}>
      */
     public const GRUPLAR = [
         'genel' => [
@@ -63,8 +65,36 @@ final class Ayar
             'alanlar'  => [
                 'site_eposta'                 => ['İletişim e-postası', 'email', 180, true, 'Mesaj bildirimleri varsayılan olarak bu adrese gider.'],
                 'iletisim_bildirim'           => ['Yeni mesajda e-posta ile bildir', 'onay', 1, false, 'MAIL_HOST .env içinde ayarlıysa çalışır.'],
-                'iletisim_mesaj_ucret_siniri' => ['Aynı IP için saatlik mesaj limiti', 'number', 4, true, '1 ile 1000 arası.'],
+                'iletisim_mesaj_ucret_siniri' => ['Aynı IP için saatlik mesaj limiti', 'number', 4, true, '1 ile 1000 arası.', [1, 1000]],
                 'altbilgi_metin'              => ['Altbilgi metni', 'text', 200, false, 'Boşsa "© yıl site başlığı" gösterilir.'],
+            ],
+        ],
+        'gizlilik' => [
+            'baslik'   => 'Gizlilik ve KVKK',
+            'aciklama' => 'İletişim formundan kişisel veri topladığınız için aydınlatma metni önerilir. Hazır şablonlar Sayfalar bölümündedir (hukuki danışmanlık değildir).',
+            'alanlar'  => [
+                'kvkk_sayfa'        => ['Aydınlatma metni sayfası (adres)', 'text', 100, false, 'Sayfalar bölümünde YAYINLADIĞINIZ sayfanın adresi (örn. aydinlatma-metni). Doluysa iletişim formunda onay kutusu zorunlu olur.'],
+                'mesaj_saklama_gun' => ['Mesajları saklama süresi (gün)', 'number', 4, true, '0 = silme. Bu süreden eski mesajlar bakım görevinde otomatik silinir (en çok 3650).', [0, 3650]],
+                'ip_saklama'        => ['IP adresi saklama', 'secim', 10, true, 'Mesaj ve günlüklerde IP’nin nasıl saklanacağı. Kısaltılmış: son bölüm silinir.', ['tam' => 'Tam adres', 'kisa' => 'Kısaltılmış (önerilen)', 'yok' => 'Hiç saklama']],
+            ],
+        ],
+        'guvenlik' => [
+            'baslik'   => 'Güvenlik',
+            'aciklama' => 'Hesap güvenliği politikaları. Oturumlar ve denetim günlüğü için Güvenlik sayfasına bakın.',
+            'alanlar'  => [
+                'zorunlu_2fa'          => ['Tüm yöneticiler için 2FA zorunlu', 'onay', 1, false, 'Açıkken 2FA’sı olmayan kullanıcı, kurulum yapana kadar yalnızca profil sayfasını görür. Önce kendi 2FA’nızı etkinleştirin!'],
+                'yeni_cihaz_bildirimi' => ['Yeni cihazdan girişte e-posta gönder', 'onay', 1, false, 'SMTP ayarlıysa çalışır (.env MAIL_*).'],
+            ],
+        ],
+        'yedekleme' => [
+            'baslik'   => 'Otomatik yedekleme',
+            'aciklama' => 'Yedekler storage/yedekler klasörüne yazılır; bakım görevi (cron ya da panel açılışı) zamanı gelince alır. Dış hedef bilgileri .env dosyasındadır; burada yalnızca açıp kapatırsınız.',
+            'alanlar'  => [
+                'otomatik_yedek_gun' => ['Otomatik yedek aralığı (gün)', 'number', 3, true, '0 = kapalı. Önerilen: 1 (günlük) veya 7 (haftalık). En çok 90.', [0, 90]],
+                'yedek_medya_dahil'  => ['Yüklenen medyayı da yedekle', 'onay', 1, false, 'Ayrı bir medya-*.tar.gz arşivi oluşturur.'],
+                'yedek_eposta'       => ['Yedeği e-postayla gönder', 'onay', 1, false, 'SMTP gerekir; dosya 15 MB’tan büyükse gönderilmez. Yedek parola özetleri içerir — yalnızca güvendiğiniz bir adrese.'],
+                'yedek_ftp'          => ['Yedeği FTP/FTPS sunucusuna gönder', 'onay', 1, false, '.env: YEDEK_FTP_HOST, YEDEK_FTP_KULLANICI, YEDEK_FTP_SIFRE …'],
+                'yedek_webdav'       => ['Yedeği WebDAV’a gönder (Nextcloud vb.)', 'onay', 1, false, '.env: YEDEK_WEBDAV_URL, YEDEK_WEBDAV_KULLANICI, YEDEK_WEBDAV_SIFRE'],
             ],
         ],
     ];

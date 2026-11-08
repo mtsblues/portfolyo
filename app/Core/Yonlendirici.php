@@ -15,6 +15,9 @@ final class Yonlendirici
         'slug'  => '[a-z0-9]+(?:-[a-z0-9]+)*',
         'id'    => '[1-9][0-9]{0,17}',
         'dosya' => '[a-f0-9]{32}\.(?:jpg|png|webp|gif|mp4|webm)',
+        'jeton' => '[a-f0-9]{64}',
+        'yedek' => '[A-Za-z0-9][A-Za-z0-9._-]{4,119}',
+        'anahtar' => '[A-Za-z0-9]{16,64}',
     ];
 
     /** @var list<array{metot:string,regex:string,isleyici:array|callable}> */

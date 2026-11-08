@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controllers\Admin;
 
+use App\Core\Denetim;
 use App\Core\Denetleyici;
+use App\Models\OturumKaydi;
 use App\Core\Oturum;
 use App\Models\Kullanici;
 use App\Models\Mesaj;
@@ -35,6 +37,26 @@ abstract class AdminTemel extends Denetleyici
             'eposta'   => (string) $db['eposta'],
             'rol'      => (string) $db['rol'],
         ];
+
+        // Uzaktan sonlandırılmış (başka cihazdan "oturumu kapat" denmiş) oturumu düşür
+        try {
+            if (!OturumKaydi::gecerliMi($this->kullanici['id'])) {
+                Oturum::cikis();
+                Oturum::flash('hata', 'Oturumunuz başka bir cihazdan sonlandırıldı. Lütfen yeniden giriş yapın.');
+                $this->yonlendir('/admin/giris');
+            }
+        } catch (\Throwable $t) {
+            gunluk('Oturum denetimi yapılamadı: ' . $t->getMessage());
+        }
+
+        // Zorunlu 2FA: etkinleştirilene kadar yalnızca profil sayfasına izin ver
+        if (ayar('zorunlu_2fa', '0') === '1' && !Kullanici::ikiAdimAktifMi($this->kullanici['id'])) {
+            $yol = gecerli_yol();
+            if (!str_starts_with($yol, '/admin/profil') && $yol !== '/admin/cikis') {
+                Oturum::flash('hata', 'Bu sitede iki adımlı doğrulama (2FA) zorunlu. Devam etmek için aşağıdan etkinleştirin.');
+                $this->yonlendir('/admin/profil');
+            }
+        }
     }
 
     /** @param array<string,mixed> $veri */
@@ -56,6 +78,13 @@ abstract class AdminTemel extends Denetleyici
 
     protected function geriDon(string $yol, string $tur, string $mesaj): never
     {
+        // Başarılı her yönetici değişikliği (POST) denetim günlüğüne işlenir: kim, hangi adreste, ne yaptı
+        // (profil, yedek ve güvenlik sayfaları kendi ayrıntılı kayıtlarını yazar)
+        $yol0 = gecerli_yol();
+        $kendiKaydi = str_starts_with($yol0, '/admin/profil') || str_starts_with($yol0, '/admin/yedekler') || str_starts_with($yol0, '/admin/guvenlik');
+        if ($tur === 'basari' && !$kendiKaydi && strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) === 'POST') {
+            Denetim::kaydet('admin.islem', gecerli_yol(), $mesaj, $this->kullanici['id'] ?? null);
+        }
         Oturum::flash($tur, $mesaj);
         $this->yonlendir($yol);
     }

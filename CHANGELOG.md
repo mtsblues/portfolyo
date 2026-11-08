@@ -2,6 +2,25 @@
 
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) ilkelerine, sürümleme [SemVer](https://semver.org/lang/tr/) ilkelerine yakındır.
 
+## [1.3.0] — 2026-11-09 — Güvence
+
+> **Güncelleme:** yedek alın, dosyaları üzerine yazın (`.env` ve `storage/` korunur) ve yönetim paneline girin; şema geçişleri (4 yeni tablo, `mesajlar.kvkk_onay`, yeni ayarlar) otomatik uygulanır. `bin/yedekle.php --yuklemeler` artık `--medya` (eski ad çalışmaya devam eder); medya yedeği `.zip` yerine `.tar.gz` olur.
+
+### Eklendi
+- **Yedekleme ve geri yükleme** (Yönetim → Yedekleme, `bin/yedekle.php`, `bin/geri-yukle.php`): tek tıkla veritabanı (+ medya) yedeği, indirme, silme, dışarıdan yedek yükleme, **geri yükleme sihirbazı** (kuru çalıştırma özeti → parola + 2FA + yazılı onay → otomatik "geri yükleme öncesi" yedek → uygula, hata olursa otomatik geri alma). Yedek dosyaları katı beyaz listeyle doğrulanır; daha yeni şemadan yedek reddedilir, eskisi geri yüklenince tamamlanır. Geri yükleme sürerken site kısa süre 503 "bakımda" döner.
+- **Otomatik yedek + dış hedefler:** Ayarlar → Otomatik yedekleme (N günde bir) ve **e-posta (ek, ≤15 MB) / FTP-FTPS / WebDAV**; hedef parolaları yalnızca `.env`'de (`YEDEK_FTP_*`, `YEDEK_WEBDAV_*`).
+- **Parola sıfırlama** (e-posta): tek kullanımlık, 60 dk, yalnızca özeti saklanan jeton; kullanıcı numaralandırmaya karşı korumalı; `bin/parola-sifirla.php` ile sunucudan kurtarma.
+- **Güvenlik merkezi** (Yönetim → Güvenlik): açık oturumlar ve **uzaktan kapatma**, giriş geçmişi, **denetim günlüğü** (filtre + sayfalama); parola değişince diğer oturumlar kapanır; **yeni cihaz girişinde e-posta**; Ayarlar'dan **2FA zorunluluğu** (kilitlenmeye karşı korumalı).
+- **Sayfalar** (Yönetim → Sayfalar, `/sayfa/{adres}`): Markdown serbest sayfalar, menü/altbilgi, taslak/yayında, site haritası; **hazır şablonlar** (KVKK aydınlatma metni, gizlilik ve çerez bildirimi, bu site hakkında — genel başlangıç metni, hukuki danışmanlık değildir).
+- **Gizlilik ayarları:** iletişim formunda aydınlatma onay kutusu (kayda işlenir), mesaj saklama süresi, **IP saklama** (tam / kısaltılmış / hiç).
+- **Bakım görevleri** (`bin/bakim.php`, panel açılışında otomatik, ya da `/bakim/{BAKIM_TOKEN}` web-cron): günlük döndürme, eski kayıt/oturum/önbellek temizliği, saklama süresi, otomatik yedek.
+- Canlı ortam kontrolüne: otomatik yedek kapalı, yedekler yalnızca sunucuda, KVKK metni bağlı değil.
+- Testler 50 → 58; `statik_kontrol.py` heredoc'u tanır.
+
+### Değişti
+- Ayar şeması: `secim` tipi ve sayı aralıkları; sayı alanlarında `0` artık geçerli.
+- `IletisimController`: saatlik mesaj sınırı saklanan (kısaltılmış) IP'ye göre sayılır; IP hiç saklanmıyorsa yalnızca dosya tabanlı hız sınırı geçerlidir.
+
 ## [1.2.0] — 2026-11-08
 
 > **Güncelleme:** dosyaları üzerine yazın ve yönetim paneline girin (şema geçişleri otomatik uygulanır) ya da `php database/install.php` çalıştırın.

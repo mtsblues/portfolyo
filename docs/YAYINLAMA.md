@@ -117,7 +117,7 @@ Hosting panelinde bu adreste bir e-posta hesabı oluşturmanız gerekir. Deneme:
 
 ### 10. Yedekleme
 - cPanel → **Cron Jobs** → her gün 03:00:
-  `0 3 * * * /usr/local/bin/php /home/kullanici/portfolyo/bin/yedekle.php --yuklemeler`
+  `0 3 * * * /usr/local/bin/php /home/kullanici/portfolyo/bin/yedekle.php --medya`
   (PHP yolunu hosting belgenizden doğrulayın.) Yedekler `storage/yedekler/` içinde birikir; **düzenli olarak bilgisayarınıza da indirin.**
 - Hostingin kendi yedeklerine **ek olarak** bunu kullanın.
 
@@ -157,7 +157,7 @@ DNS değişikliklerinin yayılması dakikalar ile 24 saat arası sürebilir.
 
 ## Güncelleme
 
-1. **Yedek alın** (`php bin/yedekle.php --yuklemeler` ya da cron'un son yedeğini indirin).
+1. **Yedek alın** (`php bin/yedekle.php --medya` ya da cron'un son yedeğini indirin).
 2. Yeni sürümün ZIP'ini indirin, içindeki dosyaları sunucudaki proje klasörünün **üzerine yazın**.
    **Dokunmayın / üzerine yazmayın:** `.env` ve `storage/` klasörü (yüklemeleriniz, yedekleriniz).
 3. **Yönetim paneline girin.** Veritabanı değişikliği varsa (yeni tablo/sütun) panel ilk girişte bunları **kendiliğinden uygular** — SSH gerekmez. SSH varsa `php database/install.php` de çalıştırabilirsiniz.

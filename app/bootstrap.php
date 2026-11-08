@@ -87,6 +87,22 @@ function uygulamayi_calistir(): void
     }
     header('Content-Type: text/html; charset=utf-8');
 
+    // Bakım bayrağı: geri yükleme sürerken (en çok 10 dk) tüm istekler 503 alır; veritabanına dokunulmaz.
+    $bayrak = KOK . '/storage/cache/bakim.flag';
+    if (PHP_SAPI !== 'cli' && is_file($bayrak) && time() - (int) @filemtime($bayrak) < 600) {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        http_response_code(503);
+        header('Retry-After: 60');
+        header('Cache-Control: no-store');
+        echo '<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<meta name="robots" content="noindex"><title>Bakımdayız</title>'
+            . '<body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;line-height:1.6">'
+            . '<h1>Kısa bir bakım arası</h1><p>Site şu anda güncelleniyor. Birkaç dakika sonra tekrar deneyin.</p></body></html>';
+        return;
+    }
+
     Oturum::baslat();
 
     $hataSayfasi = static function (int $kod) use ($metot): void {

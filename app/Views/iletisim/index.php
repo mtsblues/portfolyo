@@ -32,6 +32,15 @@
             <textarea id="mesaj" name="mesaj" rows="7" required minlength="10" maxlength="5000"></textarea>
             <p class="alan-hata" data-hata-icin="mesaj" role="alert"></p>
         </div>
+        <?php $kvkk = trim(ayar('kvkk_sayfa')); if ($kvkk !== '' && \App\Models\Sayfa::yayindaMi($kvkk)): ?>
+        <div class="alan">
+            <label class="onay">
+                <input type="checkbox" id="kvkk_onay" name="kvkk_onay" value="1" required>
+                <span><a href="<?= e(url('/sayfa/' . $kvkk)) ?>" target="_blank" rel="noopener">Aydınlatma metnini</a> okudum; verilerimin mesajıma yanıt vermek amacıyla işlenmesini kabul ediyorum.</span>
+            </label>
+            <p class="alan-hata" data-hata-icin="kvkk_onay" role="alert"></p>
+        </div>
+        <?php endif; ?>
         <div id="form-sonuc" class="uyari gizli" role="status" aria-live="polite"></div>
         <button class="btn btn-primary" type="submit" id="gonder-dugme">Mesajı gönder</button>
     </form>

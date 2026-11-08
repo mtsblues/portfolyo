@@ -17,6 +17,8 @@ final class PanelController extends AdminTemel
     {
         // Dosyalar güncellendiyse (SSH olmadan) şema geçişlerini ilk yönetici girişinde otomatik uygula
         Kurulum::otomatikGuncelle();
+        // Cron yoksa bakım görevleri (temizlik, otomatik yedek) panel açılışında ~20 saatte bir çalışır
+        \App\Core\Bakim::gerekirse();
 
         $this->admin('panel', [
             'sayfaBaslik' => 'Dashboard',

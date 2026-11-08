@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 
 use App\Core\Dogrulayici;
 use App\Models\Ayar;
+use App\Models\Sayfa;
 
 final class AyarController extends AdminTemel
 {
@@ -24,22 +25,35 @@ final class AyarController extends AdminTemel
             $on = $zorunlu ? 'gerekli|' : 'bos_olabilir|';
             $kurallar[$anahtar] = match ($tip) {
                 'email'  => $on . 'eposta|max:' . $maks,
-                'number' => $on . 'tamsayi',
+                'number' => $on . 'sayi',
                 'url'    => $on . 'url|max:' . $maks,
                 'metin'  => $on . 'max:' . $maks . '|cok_satir',
                 'yol', 'yol_dis' => $on . 'max:' . $maks,
                 'onay'   => 'bos_olabilir|max:1',
+                'secim'  => $on . 'max:' . $maks,
                 default  => $on . ($zorunlu ? 'min:2|' : '') . 'max:' . $maks,
             };
         }
         $d = Dogrulayici::yap($_POST, $kurallar);
         $hatalar = $d->hatalar();
 
-        foreach ($alanlar as $anahtar => [, $tip]) {
+        foreach ($alanlar as $anahtar => $tanim) {
+            $tip = $tanim[1];
             if (isset($hatalar[$anahtar])) {
                 continue;
             }
             $deger = (string) $d->deger($anahtar);
+            if ($tip === 'secim' && !array_key_exists($deger, (array) ($tanim[5] ?? []))) {
+                $hatalar[$anahtar] = 'Listeden bir seçenek seçin.';
+            }
+            if ($tip === 'number' && isset($tanim[5]) && ($deger === '' || (int) $deger < $tanim[5][0] || (int) $deger > $tanim[5][1])) {
+                $hatalar[$anahtar] = $tanim[5][0] . ' ile ' . $tanim[5][1] . ' arasında olmalıdır.';
+            }
+            if ($anahtar === 'kvkk_sayfa' && $deger !== '') {
+                if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $deger) !== 1 || !Sayfa::yayindaMi($deger)) {
+                    $hatalar[$anahtar] = 'Bu adreste YAYINDA bir sayfa yok. Önce Sayfalar bölümünde oluşturup durumunu “Yayında” yapın.';
+                }
+            }
             if ($tip === 'yol' && $deger !== '' && !self::gecerliYerelYol($deger)) {
                 $hatalar[$anahtar] = 'Önce Medya sayfasına yükleyin; ardından /yuklemeler/dosya-adi.png biçimindeki yolu yazın (harici adresler güvenlik politikası nedeniyle gösterilemez).';
             }
@@ -50,12 +64,13 @@ final class AyarController extends AdminTemel
                 $hatalar[$anahtar] = 'Adres http:// veya https:// ile başlamalıdır.';
             }
         }
-        $limit = (int) $d->deger('iletisim_mesaj_ucret_siniri', '20');
-        if (!isset($hatalar['iletisim_mesaj_ucret_siniri']) && ($limit < 1 || $limit > 1000)) {
-            $hatalar['iletisim_mesaj_ucret_siniri'] = '1 ile 1000 arasında olmalıdır.';
-        }
         if ($hatalar !== []) {
             $this->formHatasi('/admin/ayarlar', $hatalar, $_POST);
+        }
+
+        // 2FA zorunluluğu açılıyorsa, kilitlenmeyi önlemek için önce kendi 2FA'nız açık olmalı
+        if (isset($_POST['zorunlu_2fa']) && !\App\Models\Kullanici::ikiAdimAktifMi($this->kullanici['id'])) {
+            $this->formHatasi('/admin/ayarlar', ['zorunlu_2fa' => 'Önce kendi hesabınızda 2FA’yı etkinleştirin (Profil sayfası); aksi halde kendinizi kilitlersiniz.'], $_POST);
         }
 
         foreach ($alanlar as $anahtar => [, $tip]) {

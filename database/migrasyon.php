@@ -42,6 +42,11 @@ function migrasyonlari_uygula(PDO $pdo, string $db, string $yuklemeDizini): arra
         }
     }
 
+    // v1.3 — iletişim formunda açık onay (KVKK) kaydı
+    if (mig_sutun_ekle($pdo, $db, 'mesajlar', 'kvkk_onay', 'TINYINT(1) NOT NULL DEFAULT 0')) {
+        $log[] = 'mesajlar.kvkk_onay eklendi';
+    }
+
     // v1.1 — yükleme dizinindeki eski dosyaları medya kütüphanesine kaydet (geriye dönük)
     if (is_dir($yuklemeDizini)) {
         $ekle = $pdo->prepare(
