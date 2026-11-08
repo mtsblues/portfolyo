@@ -23,6 +23,8 @@ Yönetim paneline `https://siteniz/admin/giris` adresinden girilir. Bu rehber i�
 | **Mesajlar** | İletişim formundan gelenler |
 | **Kullanıcılar, Ayarlar** | (yalnızca yönetici) |
 
+**Dashboard → Canlı ortam kontrolü** (yalnızca yönetici): sitenizin canlıda güvenli ve doğru yapılandırıldığını denetler. Kırmızı (kritik) ve turuncu (uyarı) maddeleri düzeltin; mavi maddeler bilgidir. Örnekler: hata ayıklama modu açık, HTTPS yok, `SESSION_SECURE` kapalı, Cloudflare/proxy ayarı eksik, `install.php` sunucuda duruyor, `storage` yazılamıyor, PHP yükleme sınırı video sınırından küçük, yedek alınmamış.
+
 Sağ üstteki **kullanıcı adınıza** tıklayarak **Profil** sayfasına (parola, 2FA) gidebilirsiniz.
 
 ## İçerik yazma (Markdown)

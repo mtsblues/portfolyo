@@ -3,7 +3,7 @@
 Saf (framework'süz) **PHP 8.2+** ile yazılmış; güvenli, hızlı ve sade bir **portfolyo + blog + çözüm arşivi** sistemi.
 Kurulumu birkaç dakika sürer, paylaşımlı hostingde de çalışır, ayarların tamamı yönetim panelinden yapılır.
 
-[![CI](https://github.com/mtsblues/portfolyo/actions/workflows/ci.yml/badge.svg)](https://github.com/mtsblues/portfolyo/actions/workflows/ci.yml)
+[![CI](https://github.com/KULLANICI/portfolyo/actions/workflows/ci.yml/badge.svg)](https://github.com/KULLANICI/portfolyo/actions/workflows/ci.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)
 ![Lisans](https://img.shields.io/badge/lisans-MIT-green)
 ![Bağımlılık](https://img.shields.io/badge/composer%20bağımlılığı-yok-blue)
@@ -33,7 +33,8 @@ Site adı, ana sayfa başlığı, "Hakkımda", sosyal bağlantılar, logo ve pay
 - Dashboard, makale / proje / kategori / etiket / mesaj / kullanıcı yönetimi, roller (admin, editör)
 - **İki adımlı doğrulama (TOTP)** — Google/Microsoft Authenticator, Authy, Bitwarden, 1Password… yedek kodlarla
 - Brute-force kilidi, güçlü parola politikası, kendi parolasını değiştirme
-- **Yedekleme** (`bin/yedekle.php`, mysqldump gerekmez) ve veri kaybı olmadan **güncelleme** (`php database/install.php`)
+- **Yedekleme** (`bin/yedekle.php`, mysqldump gerekmez) ve veri kaybı olmadan **güncelleme** (SSH olmadan da: panele girince şema otomatik güncellenir)
+- **Tarayıcıdan kurulum sihirbazı** (SSH olmayan hostingler için; varsayılan kapalı, token korumalı) ve panelde **canlı ortam kontrolü** (debug açık, HTTPS yok, proxy ayarı eksik, `install.php` duruyor…)
 
 **Güvenlik** (ayrıntı: [SECURITY.md](SECURITY.md))
 PDO hazır sorgular · her çıktı kaçışlanır · CSRF · sıkı CSP (nonce) · oturum sertleştirme (HttpOnly, SameSite, IP/UA bağlama) ·
@@ -44,7 +45,7 @@ PDO hazır sorgular · her çıktı kaçışlanır · CSRF · sıkı CSP (nonce)
 Gereksinimler: **PHP 8.2+** (`pdo_mysql`, `mbstring`, `fileinfo`, `openssl`; önerilen `gd`, `exif`, `zip`) ve **MySQL 8 / MariaDB 10.4+**.
 
 ```bash
-git clone https://github.com/mtsblues/portfolyo.git
+git clone https://github.com/KULLANICI/portfolyo.git
 cd portfolyo
 cp config/.env.example .env           # Windows: copy config\.env.example .env   → DB_* değerlerini düzenleyin
 php database/install.php              # veritabanı + tablolar + ilk yönetici (parolayı sorar)
@@ -53,7 +54,8 @@ php -S localhost:8000 -t public public/index.php
 
 Site: <http://localhost:8000> · Yönetim: <http://localhost:8000/admin/giris>
 
-Diğer kurulum yolları — **XAMPP (Windows)**, Linux (Apache/Nginx), Docker, paylaşımlı hosting — için: **[docs/KURULUM.md](docs/KURULUM.md)**.
+Diğer kurulum yolları — **XAMPP (Windows)**, Linux (Apache/Nginx), Docker — için: **[docs/KURULUM.md](docs/KURULUM.md)**.
+**Hosting + alan adı + SSL ile yayınlamak** (SSH olmadan, tarayıcıdan kurulum dahil) için: **[docs/YAYINLAMA.md](docs/YAYINLAMA.md)**.
 İçerik yazma, medya ve ayarlar için: **[docs/KULLANIM.md](docs/KULLANIM.md)**.
 
 ## Yapılandırma

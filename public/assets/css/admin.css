@@ -105,3 +105,20 @@ td.eylemler > * { display: inline-block; vertical-align: middle; }
 .ayar-grup > p { margin-top: 0; }
 .yedek-kodlar { font: 600 1rem var(--mono); columns: 2; padding: 1rem; background: var(--bg-alt); border: 1px solid var(--kenar); border-radius: 10px; list-style: none; }
 .gizli-anahtar { font: 600 1.05rem var(--mono); word-break: break-all; letter-spacing: .05em; }
+
+/* ---------- Kurulum sihirbazı ve canlı ortam kontrolü ---------- */
+.kontrol-listesi { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .35rem; font-size: .92rem; }
+.kontrol-listesi li { display: flex; gap: .5rem; align-items: baseline; }
+.kontrol-ok > span:first-child { color: var(--basari); font-weight: 700; }
+.kontrol-hata > span:first-child { color: var(--hata); font-weight: 700; }
+.kurulum-adimlar { padding-left: 1.2rem; display: grid; gap: .5rem; font-size: .95rem; }
+.saglik-listesi { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.saglik-listesi li { display: flex; gap: .6rem; align-items: baseline; padding: .5rem .75rem; border: 1px solid var(--kenar); border-radius: 10px; background: var(--yuzey); font-size: .92rem; }
+.saglik-listesi li.saglik-kritik { border-color: color-mix(in srgb, var(--hata) 45%, transparent); background: var(--hata-bg); }
+.saglik-listesi li.saglik-uyari { border-color: color-mix(in srgb, #d97706 45%, transparent); }
+.saglik-listesi li.saglik-ok { opacity: .75; }
+.saglik-isaret { font-weight: 700; min-width: 1.2rem; }
+.saglik-kritik .saglik-isaret { color: var(--hata); }
+.saglik-uyari .saglik-isaret { color: #d97706; }
+.saglik-ok .saglik-isaret { color: var(--basari); }
+.saglik-kart { margin-bottom: 1.25rem; }

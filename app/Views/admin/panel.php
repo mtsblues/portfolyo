@@ -22,6 +22,26 @@ $kartlar = [
     </div>
 </div>
 
+<?php if (!empty($saglik)):
+    $sorunlar = array_filter($saglik, static fn(array $s): bool => in_array($s['seviye'], ['kritik', 'uyari'], true));
+    $isaretler = ['kritik' => '✗', 'uyari' => '!', 'bilgi' => 'i', 'ok' => '✓'];
+    ?>
+    <section class="kart saglik-kart" aria-labelledby="saglik-baslik">
+        <div class="kart-baslik">
+            <h2 id="saglik-baslik">Canlı ortam kontrolü</h2>
+            <span class="soluk"><?= $sorunlar === [] ? 'Her şey yolunda' : count($sorunlar) . ' madde dikkat istiyor' ?></span>
+        </div>
+        <ul class="saglik-listesi">
+            <?php foreach ($saglik as $s): ?>
+                <li class="saglik-<?= e($s['seviye']) ?>">
+                    <span class="saglik-isaret" aria-hidden="true"><?= e($isaretler[$s['seviye']] ?? '') ?></span>
+                    <span><strong><?= e($s['baslik']) ?></strong><?php if ($s['not'] !== ''): ?><br><small class="soluk"><?= e($s['not']) ?></small><?php endif; ?></span>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </section>
+<?php endif; ?>
+
 <div class="iki-kolon">
     <section class="kart">
         <div class="kart-baslik"><h2>Son makaleler</h2><a class="baglanti-ok" href="<?= e(url('/admin/makale/yeni')) ?>">+ Yeni</a></div>

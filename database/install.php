@@ -200,6 +200,9 @@ if (!isset($secenek['sema-atla'])) {
         foreach (migrasyonlari_uygula($kok, $dbAd, (string) config('yukleme.dizin')) as $satir) {
             yaz('• Geçiş: ' . $satir);
         }
+        // Panelin otomatik şema güncellemesi bu sürümü tekrar çalıştırmasın
+        $kok->prepare('INSERT INTO ayarlar (anahtar, deger) VALUES (?, ?) ON DUPLICATE KEY UPDATE deger = VALUES(deger)')
+            ->execute(['sema_surumu', (string) \App\Core\Kurulum::SEMA_SURUMU]);
     } catch (PDOException $e) {
         hata_cik('Veritabanı işlemi başarısız: ' . $e->getMessage() . ' (.env DB_* değerlerini ve MySQL servisini kontrol edin)');
     }

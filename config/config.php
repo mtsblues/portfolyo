@@ -61,6 +61,10 @@ return [
         'gonderen'  => (string) Y::env('MAIL_GONDEREN', ''),
         'alici'     => (string) Y::env('MAIL_ALICI', ''),
     ],
+    // Tarayıcıdan kurulum sihirbazı (SSH olmayan hostingler). Boş = KAPALI. Kurulumdan sonra bu değeri .env'den silin.
+    'kurulum' => [
+        'token' => (string) Y::env('KURULUM_TOKEN', ''),
+    ],
     'yedek' => [
         'dizin'  => KOK . '/storage/yedekler',
         'sakla'  => max(1, (int) Y::env('YEDEK_SAKLA', 14)),

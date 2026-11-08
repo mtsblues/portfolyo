@@ -29,18 +29,28 @@ function temel_yol(): string
     if (PHP_SAPI === 'cli') {
         return '';
     }
-    $betik = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
+    return temel_yol_hesapla((string) ($_SERVER['SCRIPT_NAME'] ?? ''), (string) ($_SERVER['REQUEST_URI'] ?? ''));
+}
+
+/**
+ * Taban yolu hesaplar (saf fonksiyon; her barındırma biçimi için test edilir):
+ *  - DocumentRoot = public/ (önerilen)         : SCRIPT_NAME /index.php            → ''
+ *  - Alan adı kökünde tüm proje + kök .htaccess : SCRIPT_NAME /public/index.php, istek /blog → ''
+ *  - Alt klasör (örn. XAMPP /portfolyo)         : SCRIPT_NAME /portfolyo/public/index.php, istek /portfolyo/blog → '/portfolyo'
+ *  - Alt klasör, public/ doğrudan çağrılırsa    : istek /portfolyo/public/blog → '/portfolyo/public'
+ */
+function temel_yol_hesapla(string $betik, string $istekUri): string
+{
     $dizin = str_replace('\\', '/', dirname($betik));
     if ($dizin === '/' || $dizin === '.' || $dizin === '') {
         return '';
     }
     $dizin = rtrim($dizin, '/');
 
-    // Kök .htaccess isteği iç olarak public/'e yönlendiriyorsa (örn. http://localhost/portfolyo/),
-    // SCRIPT_NAME "/portfolyo/public/index.php" olur ama tarayıcıdaki yol "/portfolyo/..." kalır.
-    // Bu durumda taban yol "/public" eki olmadan "/portfolyo" olmalıdır.
+    // Kök .htaccess isteği iç olarak public/'e yönlendiriyorsa SCRIPT_NAME ".../public/index.php" olur ama
+    // tarayıcıdaki yol "public" içermez. Bu durumda taban yol "/public" eki olmadan hesaplanır.
     if (str_ends_with($dizin, '/public')) {
-        $istek = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+        $istek = (string) parse_url($istekUri, PHP_URL_PATH);
         if ($istek !== '' && $istek !== $dizin && !str_starts_with($istek, $dizin . '/')) {
             $dizin = substr($dizin, 0, -strlen('/public'));
         }

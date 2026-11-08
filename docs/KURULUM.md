@@ -8,7 +8,7 @@ yapılandırılacağını, yedekleneceğini ve güncelleneceğini anlatır.
 - [Windows — XAMPP](#windows--xampp)
 - [Linux — Apache](#linux--apache) · [Linux — Nginx](#linux--nginx) · [macOS](#macos)
 - [Docker](#docker)
-- [Paylaşımlı hosting](#paylaşımlı-hosting)
+- [Paylaşımlı hosting / alan adı + SSL](#paylaşımlı-hosting) → ayrıntı: [YAYINLAMA.md](YAYINLAMA.md)
 - [Yapılandırma (.env)](#yapılandırma-env)
 - [Yükleme sınırları (görsel/video)](#yükleme-sınırları-görselvideo)
 - [E-posta bildirimi (SMTP)](#e-posta-bildirimi-smtp)
@@ -166,18 +166,14 @@ Site: `http://localhost:8080` · Yönetim: `/admin/giris`.
 
 ## Paylaşımlı hosting
 
-En güvenli yol, alan adının **DocumentRoot**'unu projenin `public/` klasörüne yönlendirmektir (cPanel → *Domains / Alan adları → Document Root*).
-Bunu yapamıyorsanız:
+Alan adı + hosting + SSL ile yayınlamak için **adım adım rehber: [YAYINLAMA.md](YAYINLAMA.md)** (cPanel/Plesk, DNS, Cloudflare, SSL, e-posta, yedek).
+Kısaca:
 
-1. **Sembolik link (SSH varsa):** projeyi `public_html` dışına koyun (`/home/kullanici/portfolyo`), sonra
-   `rm -rf public_html && ln -s /home/kullanici/portfolyo/public public_html`.
-2. **Tüm projeyi `public_html` içine koyun:** depodaki kök `.htaccess` istekleri `public/` içine yönlendirir ve `app/`, `config/`, `.env`, `database/`, `bin/`, `storage/` gibi dizinleri 403 ile kapatır.
-   **Kurulumdan sonra mutlaka doğrulayın** (aşağıdaki adresler 403/404 vermeli, içerik göstermemeli):
-   `/.env`, `/app/Core/Veritabani.php`, `/config/config.php`, `/database/schema.sql`, `/storage/`.
-
-Veritabanını hosting panelinden oluşturun; `.env` içindeki `DB_*` değerlerini ona göre doldurun.
-`php database/install.php` komutunu SSH'tan çalıştıramıyorsanız, kurulumu yerel bilgisayarınızda **uzak veritabanına** bağlanarak (hosting uzaktan erişime izin veriyorsa) yapın
-ya da `database/schema.sql` dosyasını phpMyAdmin ile içe aktarıp, ardından yönetici için hostingin sunduğu bir PHP komut satırı/cron aracını kullanın.
+- En güvenli yol, alan adının **DocumentRoot**'unu projenin `public/` klasörüne yönlendirmektir (cPanel → *Domains → Document Root*).
+  Yapamıyorsanız tüm projeyi `public_html` içine koyun: kök `.htaccess` istekleri `public/` içine yönlendirir ve `app/`, `config/`, `.env`, `database/`, `bin/`, `storage/` gibi dizinleri 403 ile kapatır. **Kurulumdan sonra** `/.env`, `/app/Core/Veritabani.php`, `/config/config.php`, `/storage/` adreslerinin içerik göstermediğini doğrulayın.
+- **SSH yoksa** kurulumu tarayıcıdan yapın: `.env` içine en az 16 karakterlik bir `KURULUM_TOKEN` yazıp `https://alanadiniz.com/kurulum` adresini açın (sihirbaz varsayılan olarak **kapalıdır**; token yoksa veya bir kullanıcı varsa 404 verir). Kurulum bitince `KURULUM_TOKEN` satırını silin.
+- SSL'i açtıktan sonra `public/.htaccess` içindeki hazır HTTP→HTTPS yönlendirmesini etkinleştirin; Cloudflare kullanıyorsanız `GUVENILIR_PROXY=true` yapın ve SSL modunu *Full (strict)* seçin.
+- Yönetim paneli **Dashboard → Canlı ortam kontrolü** kartı, canlıda yanlış kalan ayarları (debug açık, HTTPS yok, `install.php` duruyor, proxy ayarı eksik, yazılamayan `storage`, PHP yükleme sınırı…) sizin için listeler.
 
 ## Yapılandırma (.env)
 
@@ -250,6 +246,7 @@ Medya zip'ini `storage/yuklemeler/` içine açın.
 1. Önce yedek alın: `php bin/yedekle.php --yuklemeler`
 2. Yeni sürümün dosyalarını üzerine kopyalayın (`git pull` ya da arşivi açın). **`.env` ve `storage/` korunur.**
 3. `php database/install.php` — mevcut verinize dokunmadan yeni tabloları/sütunları ekler ("Geçiş: …" satırları yazar).
+   **SSH yoksa** bu adımı atlayabilirsiniz: yönetim paneline girdiğinizde şema geçişleri kendiliğinden uygulanır.
 4. [CHANGELOG.md](../CHANGELOG.md) içindeki o sürümün notlarını okuyun.
 
 ## Parola / 2FA sıfırlama

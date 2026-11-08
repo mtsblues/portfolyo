@@ -5,6 +5,7 @@ use App\Controllers\Admin;
 use App\Controllers\AnaSayfaController;
 use App\Controllers\BlogController;
 use App\Controllers\IletisimController;
+use App\Controllers\KurulumController;
 use App\Controllers\ProjeController;
 use App\Controllers\YuklemeController;
 use App\Core\Yonlendirici;
@@ -26,6 +27,10 @@ return static function (Yonlendirici $r): void {
     $r->get('/iletisim', [IletisimController::class, 'index']);
     $r->post('/iletisim/gonder', [IletisimController::class, 'gonder']);
     $r->get('/yuklemeler/{dosya}', [YuklemeController::class, 'goster']);
+
+    // Tarayıcıdan kurulum (varsayılan kapalı; KURULUM_TOKEN tanımlıysa ve kullanıcı yoksa açılır)
+    $r->get('/kurulum', [KurulumController::class, 'index']);
+    $r->post('/kurulum', [KurulumController::class, 'kur']);
 
     // Yönetim: kimlik doğrulama
     $r->get('/admin/giris', [Admin\GirisController::class, 'index']);

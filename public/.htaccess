@@ -4,6 +4,17 @@ Options -Indexes -MultiViews
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # ---- CANLIDA (alan adı + SSL sertifikası aldıktan sonra) aşağıdaki satırların başındaki # işaretini kaldırın ----
+    # HTTP → HTTPS yönlendirmesi. UYARI: Cloudflare "Flexible" SSL modundaysanız AÇMAYIN (sonsuz döngü olur);
+    # önce Cloudflare'de "Full (strict)" seçin. Ters vekil arkasındaysanız X-Forwarded-Proto kontrolü gereklidir.
+    # RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    #
+    # www → www'suz (tek adres kullanın; arama motorları için önemlidir). "ornek.com" yerine kendi alan adınızı yazın.
+    # RewriteCond %{HTTP_HOST} ^www\.ornek\.com$ [NC]
+    # RewriteRule ^ https://ornek.com%{REQUEST_URI} [L,R=301]
+
     # Authorization başlığını PHP'ye ilet
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

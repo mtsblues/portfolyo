@@ -2,6 +2,19 @@
 
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) ilkelerine, sürümleme [SemVer](https://semver.org/lang/tr/) ilkelerine yakındır.
 
+## [1.2.0] — 2026-11-08
+
+> **Güncelleme:** dosyaları üzerine yazın ve yönetim paneline girin (şema geçişleri otomatik uygulanır) ya da `php database/install.php` çalıştırın.
+
+### Eklendi
+- **Tarayıcıdan kurulum sihirbazı** (`/kurulum`): SSH/komut satırı olmayan hostingler için. Varsayılan **kapalı**; `.env` içinde en az 16 karakterlik `KURULUM_TOKEN` varsa ve veritabanında hiç kullanıcı yokken açılır, aksi halde 404 verir. Ön kontrol listesi (PHP sürümü/eklentiler, klasör izinleri, veritabanı), hız sınırı, CSRF, güçlü parola zorunluluğu; veritabanı yoksa oluşturmayı dener.
+- **Canlı ortam kontrolü** (Dashboard): debug açık, HTTPS yok, `SESSION_SECURE`/HSTS, `APP_URL` uyumsuzluğu, Cloudflare/proxy (`GUVENILIR_PROXY`), kalan kurulum betikleri/token, 2FA, yazılamayan `storage`, PHP yükleme sınırı, eksik eklentiler ve eski yedek için uyarılar.
+- **SSH'siz güncelleme:** yönetici panele girdiğinde kayıtlı şema sürümü eskiyse geçişler otomatik uygulanır (tekrar çalıştırılabilir, hata verirse siteyi bozmaz).
+- **docs/YAYINLAMA.md:** hosting + alan adı + SSL ile yayınlama rehberi (cPanel/Plesk, DNS, VPS, Cloudflare, e-posta, yedek, kontrol listesi, sorun giderme).
+- `public/.htaccess` içinde hazır (yorumlu) HTTP→HTTPS ve www→www'suz yönlendirme kuralları.
+- `temel_yol_hesapla()`: tüm barındırma biçimleri (DocumentRoot, alan adı kökü, alt klasör) için test edilen saf fonksiyon.
+- Testler 45 → 50.
+
 ## [1.1.0] — 2026-11-08
 
 > **Güncelleme:** yedek alın (`php bin/yedekle.php --yuklemeler`), dosyaları güncelleyin, ardından `php database/install.php` çalıştırın.

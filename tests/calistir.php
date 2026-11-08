@@ -463,6 +463,66 @@ test('Posta: yapılandırma yoksa ve adreste başlık enjeksiyonu varsa gönderi
     dogru(str_contains((string) $s['hata'], 'Geçersiz'), 'enjeksiyonlu adres doğrulanmadı: ' . (string) $s['hata']);
 });
 
+echo "== Hosting / canlı ortam senaryoları\n";
+test('taban yol: tüm barındırma biçimleri (DocumentRoot, alan adı kökü, alt klasör)', function (): void {
+    esit('', temel_yol_hesapla('/index.php', '/blog'), 'DocumentRoot=public');
+    esit('', temel_yol_hesapla('/public/index.php', '/blog?sayfa=2'), 'alan adı kökünde tüm proje + kök .htaccess');
+    esit('', temel_yol_hesapla('/public/index.php', '/'), 'alan adı kökü, ana sayfa');
+    esit('/portfolyo', temel_yol_hesapla('/portfolyo/public/index.php', '/portfolyo/blog'), 'alt klasör (XAMPP)');
+    esit('/portfolyo', temel_yol_hesapla('/portfolyo/public/index.php', '/portfolyo/'), 'alt klasör ana sayfa');
+    esit('/portfolyo/public', temel_yol_hesapla('/portfolyo/public/index.php', '/portfolyo/public/blog'), 'public doğrudan çağrılırsa');
+    esit('/siteler/benim', temel_yol_hesapla('/siteler/benim/public/index.php', '/siteler/benim/makale/x'), 'derin alt klasör');
+});
+test('kurulum sihirbazı yalnızca uzun token + sıfır kullanıcıyla açılır', function (): void {
+    $uzun = str_repeat('a', 16);
+    dogru(App\Core\Kurulum::etkinMi($uzun, 0), 'açılmalıydı');
+    dogru(!App\Core\Kurulum::etkinMi('', 0), 'token boşken açıldı');
+    dogru(!App\Core\Kurulum::etkinMi('kisa-token', 0), 'kısa token kabul edildi');
+    dogru(!App\Core\Kurulum::etkinMi($uzun, 1), 'kullanıcı varken açıldı');
+    dogru(!App\Core\Kurulum::etkinMi($uzun, null), 'bilinmeyen durumda açıldı');
+});
+test('SQL ifade bölücü yorumları atar ve ifadeleri ayırır', function (): void {
+    $s = App\Core\Kurulum::sqlIfadeleri("-- yorum\nCREATE TABLE a (id INT);\n\n-- baska\nINSERT INTO a VALUES (1);\nINSERT INTO a VALUES (2);\n");
+    esit(3, count($s));
+    dogru(str_starts_with($s[0], 'CREATE TABLE a') && !str_contains(implode('', $s), 'yorum'), 'yorum kaldı');
+    $gercek = App\Core\Kurulum::sqlIfadeleri((string) file_get_contents(KOK . '/database/schema.sql'));
+    dogru(count($gercek) >= 14, 'schema.sql ifadeleri bulunamadı: ' . count($gercek));
+});
+test('canlı ortam kontrolü: tehlikeli yapılandırmaları işaretler', function (): void {
+    $temel = ['ortam' => 'production', 'debug' => false, 'url' => 'https://ornek.com', 'istek_host' => 'ornek.com', 'https' => true,
+        'proxy_basligi' => false, 'guvenilir_proxy' => false, 'oturum_secure' => true, 'hsts' => true, 'install_var' => false,
+        'seed_var' => false, 'kurulum_token' => false, 'totp_aktif' => true, 'depolama_yazilabilir' => true,
+        'php_yukleme_bayt' => 64 * 1048576, 'video_siniri_bayt' => 50 * 1048576, 'gd' => true, 'zip' => true, 'smtp' => true,
+        'son_yedek' => 1000, 'simdi' => 1000 + 3600, 'php' => '8.3'];
+    $seviyeler = static fn(array $o): array => array_map(static fn($s) => $s['seviye'] . ':' . $s['baslik'], App\Core\Saglik::degerlendir($o));
+    $var = static fn(array $liste, string $seviye, string $parca): bool => count(array_filter($liste, static fn($x) => str_starts_with($x, $seviye . ':') && str_contains($x, $parca))) > 0;
+
+    $iyi = $seviyeler($temel);
+    dogru(!$var($iyi, 'kritik', '') && !$var($iyi, 'uyari', ''), 'sağlıklı yapılandırma uyarı verdi: ' . implode(' | ', $iyi));
+
+    dogru($var($seviyeler(['debug' => true] + $temel), 'kritik', 'APP_DEBUG'), 'canlıda debug kritik değil');
+    dogru($var($seviyeler(['https' => false] + $temel), 'kritik', 'HTTPS'), 'HTTPS yokken kritik değil');
+    dogru($var($seviyeler(['oturum_secure' => false] + $temel), 'uyari', 'SESSION_SECURE'), 'SESSION_SECURE uyarısı yok');
+    dogru($var($seviyeler(['proxy_basligi' => true, 'https' => true] + $temel), 'uyari', 'Proxy'), 'proxy uyarısı yok');
+    dogru($var($seviyeler(['guvenilir_proxy' => true, 'proxy_basligi' => false] + $temel), 'uyari', 'GUVENILIR_PROXY'), 'gereksiz proxy güveni uyarısı yok');
+    dogru($var($seviyeler(['install_var' => true] + $temel), 'uyari', 'betikleri'), 'install.php uyarısı yok');
+    dogru($var($seviyeler(['kurulum_token' => true] + $temel), 'uyari', 'KURULUM_TOKEN'), 'token uyarısı yok');
+    dogru($var($seviyeler(['depolama_yazilabilir' => false] + $temel), 'kritik', 'storage'), 'yazılamayan storage kritik değil');
+    dogru($var($seviyeler(['php_yukleme_bayt' => 2 * 1048576] + $temel), 'uyari', 'yükleme sınırı'), 'PHP sınırı uyarısı yok');
+    dogru($var($seviyeler(['url' => 'https://baska.com'] + $temel), 'uyari', 'APP_URL'), 'APP_URL uyumsuzluğu uyarısı yok');
+    dogru($var($seviyeler(['son_yedek' => 0] + $temel), 'uyari', 'yedek'), 'yedek uyarısı yok');
+
+    // Yerel geliştirme: debug ve https yokluğu kritik sayılmaz
+    $yerel = $seviyeler(['debug' => true, 'https' => false, 'url' => 'http://localhost:8000', 'istek_host' => 'localhost:8000', 'oturum_secure' => false, 'hsts' => false, 'totp_aktif' => false, 'son_yedek' => 0] + $temel);
+    dogru(!$var($yerel, 'kritik', ''), 'yerel geliştirme kritik sayıldı: ' . implode(' | ', $yerel));
+});
+test('bayt(): php.ini boyut yazımları', function (): void {
+    esit(64 * 1048576, App\Core\Saglik::bayt('64M'));
+    esit(2 * 1073741824, App\Core\Saglik::bayt('2G'));
+    esit(512 * 1024, App\Core\Saglik::bayt('512K'));
+    esit(PHP_INT_MAX, App\Core\Saglik::bayt('-1'));
+});
+
 echo "\n";
 if ($kalan === []) {
     echo "TÜM TESTLER GEÇTİ ({$gecen})\n";

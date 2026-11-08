@@ -8,7 +8,7 @@ Büyük bir değişiklik düşünüyorsanız, emek harcamadan önce bir **issue*
 ## Geliştirme ortamı
 
 ```bash
-git clone https://github.com/mtsblues/portfolyo.git && cd portfolyo
+git clone https://github.com/KULLANICI/portfolyo.git && cd portfolyo
 cp config/.env.example .env           # DB_* değerlerini düzenleyin
 php database/install.php              # veritabanı + ilk yönetici
 php database/seed.php                 # örnek içerik (isteğe bağlı)
@@ -29,7 +29,7 @@ CI (GitHub Actions) PHP 8.2/8.3/8.4'te bunları ve sıfırdan kurulum + duman te
 2. **Önce güvenlik:** her girdiyi sunucuda doğrulayın (`Dogrulayici`), her çıktıyı `e()` ile kaçışlayın, SQL'i yalnızca hazır sorguyla yazın, her POST'ta CSRF koruması olsun, yönetim uçları `AdminTemel` altında oturum/rol denetlesin. CSP'yi gevşetmeyin.
 3. **Katmanlar:** Controller → Model → Veritabani. View SQL çalıştırmaz; Model görünüm/denetleyici çağırmaz.
 4. **Kod stili:** PHP 8.2+, her dosyada `declare(strict_types=1);`, kapanış `?>` etiketi yok, PSR-12'ye yakın biçim, `.editorconfig`'e uyun. Sınıf/metot/alan adları Türkçe terminolojiyle tutarlıdır (`Makale`, `Yonlendirici`, `kaydet`…), kod yorumları Türkçedir.
-5. **Geriye uyumluluk:** Veritabanı şeması değişiyorsa **hem** `database/schema.sql` **hem de** `database/migrasyon.php` güncellenmelidir; mevcut kurulumlar `php database/install.php` ile veri kaybı olmadan yükselebilmelidir (migrasyon tekrar çalıştırılabilir/idempotent olmalı).
+5. **Geriye uyumluluk:** Veritabanı şeması değişiyorsa **hem** `database/schema.sql` **hem de** `database/migrasyon.php` güncellenmeli ve `App\Core\Kurulum::SEMA_SURUMU` **bir artırılmalıdır** (yönetici panele girince geçişler SSH olmadan otomatik uygulanır); mevcut kurulumlar `php database/install.php` ile veri kaybı olmadan yükselebilmelidir (migrasyon tekrar çalıştırılabilir/idempotent olmalı).
 6. **Test:** yeni davranış için `tests/calistir.php` içine test ekleyin. Güvenlikle ilgili düzeltmelerde, açığı yeniden üreten bir test ekleyin.
 7. **Belge:** kullanıcıya görünen değişiklikleri `docs/`, `config/.env.example` ve `CHANGELOG.md` içinde belirtin.
 
