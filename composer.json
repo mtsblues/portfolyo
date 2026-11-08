@@ -1,0 +1,29 @@
+{
+    "name": "portfolyo/portfolyo",
+    "description": "Saf PHP ile yazılmış güvenli portfolyo, blog ve bilgi kütüphanesi (framework'süz, bağımlılıksız).",
+    "type": "project",
+    "license": "MIT",
+    "keywords": ["portfolio", "blog", "cms", "php", "mvc", "markdown"],
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-mbstring": "*",
+        "ext-fileinfo": "*",
+        "ext-openssl": "*"
+    },
+    "suggest": {
+        "ext-gd": "Çok büyük görselleri küçültmek için",
+        "ext-exif": "Fotoğraf yönü (EXIF Orientation) için",
+        "ext-zip": "bin/yedekle.php --yuklemeler için",
+        "ext-zlib": "Sıkıştırılmış yedekler için"
+    },
+    "scripts": {
+        "test": "php tests/calistir.php",
+        "kur": "php database/install.php",
+        "yedekle": "php bin/yedekle.php"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

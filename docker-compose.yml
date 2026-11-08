@@ -1,0 +1,83 @@
+# Kullanım (ayrıntı: docs/KURULUM.md → Docker):
+#   1) cp config/.env.example .env          (compose bu dosyadaki değişkenleri okur)
+#   2) .env içinde DB_SIFRE ve UYGULAMA_ANAHTARI değerlerini doldurun
+#   3) docker compose up -d --build
+#   4) docker compose exec app php database/install.php     (şema + ilk yönetici)
+#
+# Uygulama değişkenleri (DB_KULLANICI, DB_SIFRE, DB_NAME ...) config/config.php ile birebir aynı adları kullanır.
+services:
+  app:
+    build: .
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Istanbul}
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-portfolyo}
+      DB_KULLANICI: ${DB_KULLANICI:-portfolyo_app}
+      DB_SIFRE: ${DB_SIFRE:?DB_SIFRE .env dosyasında tanımlı olmalı}
+      UYGULAMA_ANAHTARI: ${UYGULAMA_ANAHTARI:?UYGULAMA_ANAHTARI .env dosyasında tanımlı olmalı (openssl rand -hex 32)}
+      # Yerel HTTP testinde false; HTTPS arkasında true yapın
+      SESSION_SECURE: ${SESSION_SECURE:-false}
+      HSTS: ${HSTS:-false}
+      GUVENILIR_PROXY: ${GUVENILIR_PROXY:-false}
+      YUKLEME_MAX_BOYUT_MB: ${YUKLEME_MAX_BOYUT_MB:-5}
+      YUKLEME_VIDEO_MAX_MB: ${YUKLEME_VIDEO_MAX_MB:-50}
+      # E-posta bildirimi (isteğe bağlı; MAIL_HOST boşsa gönderilmez)
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_SIFRELEME: ${MAIL_SIFRELEME:-tls}
+      MAIL_KULLANICI: ${MAIL_KULLANICI:-}
+      MAIL_SIFRE: ${MAIL_SIFRE:-}
+      MAIL_GONDEREN: ${MAIL_GONDEREN:-}
+      MAIL_ALICI: ${MAIL_ALICI:-}
+      YEDEK_SAKLA: ${YEDEK_SAKLA:-14}
+    volumes:
+      - uygulama_yedek:/var/www/html/storage/yedekler
+      - uygulama_oturum:/var/www/html/storage/oturum
+      - uygulama_yukleme:/var/www/html/storage/yuklemeler
+      - uygulama_cache:/var/www/html/storage/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backend
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-portfolyo}
+      MYSQL_USER: ${DB_KULLANICI:-portfolyo_app}
+      MYSQL_PASSWORD: ${DB_SIFRE:?DB_SIFRE .env dosyasında tanımlı olmalı}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    # 3306 DIŞARI AÇILMAZ: veritabanına yalnızca "backend" ağındaki uygulama erişir.
+    expose:
+      - "3306"
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db_data:
+  uygulama_oturum:
+  uygulama_yukleme:
+  uygulama_cache:
+  uygulama_yedek:

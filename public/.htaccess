@@ -1,0 +1,51 @@
+# Apache (XAMPP / paylaşımlı hosting) — mod_rewrite ve AllowOverride All gerekir.
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Authorization başlığını PHP'ye ilet
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Yol gezdirme (../, %2e%2e) ve ham kontrol karakterleri içeren istekleri reddet
+    RewriteCond %{REQUEST_URI} (^|/)(\.\.|%2e%2e)(/|$) [NC]
+    RewriteRule ^ - [F,L]
+
+    # Gerçek dosya/klasör varsa doğrudan sun (yalnızca /assets), diğer her şey index.php'ye
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^(assets/.+|robots\.txt)$ - [L]
+
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Gizli dosyalar
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Statik varlıklar için önbellek + sıkıştırma
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|woff2|svg|png|jpg|jpeg|webp|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(css|js|svg|png|jpg|jpeg|webp|ico)$">
+        Header set Vary "Accept-Encoding"
+    </FilesMatch>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    # Video yüklemek için (varsayılan sınır 50 MB). .env'deki YUKLEME_VIDEO_MAX_MB ile uyumlu tutun.
+    # PHP-FPM / CGI kullanıyorsanız bu satırlar etkisizdir: php.ini veya .user.ini içinde ayarlayın (docs/KURULUM.md).
+    php_value upload_max_filesize 64M
+    php_value post_max_size 72M
+    php_value memory_limit 256M
+</IfModule>

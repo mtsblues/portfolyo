@@ -1,0 +1,26 @@
+name: Özellik isteği
+description: Yeni bir özellik veya iyileştirme önerin
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: ihtiyac
+    attributes:
+      label: Hangi ihtiyacı çözüyor?
+      description: Sorunu/ihtiyacı anlatın; çözümü değil.
+    validations:
+      required: true
+  - type: textarea
+    id: oneri
+    attributes:
+      label: Önerilen çözüm
+  - type: textarea
+    id: alternatif
+    attributes:
+      label: Düşündüğünüz alternatifler
+  - type: checkboxes
+    id: kapsam
+    attributes:
+      label: Proje ilkeleriyle uyum
+      options:
+        - label: Harici bağımlılık (Composer/NPM/CDN) gerektirmiyor ya da gerekçesini yazdım
+        - label: Güvenliği zayıflatmıyor

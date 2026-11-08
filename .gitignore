@@ -1,0 +1,25 @@
+# Gizli bilgiler
+.env
+.env.*
+!config/.env.example
+
+# Çalışma zamanı verisi (yüklenen medya, oturum, günlük, yedek)
+/storage/logs/*
+/storage/cache/*
+/storage/oturum/*
+/storage/yuklemeler/*
+/storage/yedekler/*
+!/storage/**/.gitkeep
+
+# Bağımlılık / araç / editör artıkları
+/vendor/
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+*.log

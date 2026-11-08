@@ -1,0 +1,38 @@
+name: Hata bildirimi
+description: Bir şey beklediğiniz gibi çalışmıyor
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Teşekkürler! **Güvenlik açıklarını burada paylaşmayın** — [SECURITY.md](../blob/main/SECURITY.md) dosyasındaki yönergeyi izleyin.
+  - type: textarea
+    id: ne
+    attributes:
+      label: Ne oldu?
+      description: Beklediğiniz ile gerçekleşen arasındaki fark.
+    validations:
+      required: true
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Yeniden üretme adımları
+      placeholder: |
+        1. Yönetim → Medya'ya gidin
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: ortam
+    attributes:
+      label: Ortam
+      description: PHP sürümü, işletim sistemi, sunucu (XAMPP / Apache / Nginx / Docker), MySQL/MariaDB sürümü
+      placeholder: "PHP 8.3, Windows 11, XAMPP, MariaDB 10.4"
+    validations:
+      required: true
+  - type: textarea
+    id: gunluk
+    attributes:
+      label: Günlük çıktısı
+      description: "`storage/logs/uygulama.log` içindeki ilgili satırlar (parola/anahtar içermediğinden emin olun)."
+      render: text

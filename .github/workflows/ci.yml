@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.2", "8.3", "8.4"]
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: portfolyo
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, mbstring, fileinfo, openssl, gd, exif, zip, zlib
+          coverage: none
+
+      - name: Sözdizimi denetimi (php -l)
+        # herhangi bir dosya hatalıysa xargs sıfırdan farklı çıkar ve adım başarısız olur
+        run: find app config database public bin tests -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Otomatik testler (veritabanı gerekmez)
+        run: php tests/calistir.php
+
+      - name: Statik tutarlılık denetimi
+        run: python3 -I tests/statik_kontrol.py
+
+      - name: .env hazırla ve kurulumu çalıştır (şema + ilk yönetici + geçişler)
+        env:
+          KURULUM_ADMIN_AD: CI Yonetici
+          KURULUM_ADMIN_EPOSTA: ci@example.test
+          KURULUM_ADMIN_PAROLA: Ci-Test-Parola-2026!
+        run: |
+          cp config/.env.example .env
+          sed -i 's/^DB_SIFRE=.*/DB_SIFRE=root/; s/^DB_KULLANICI=.*/DB_KULLANICI=root/; s/^APP_URL=.*/APP_URL=http:\/\/127.0.0.1:8000/' .env
+          php database/install.php
+          # Güncelleme idempotent olmalı: ikinci çalıştırma hata vermemeli
+          php database/install.php
+          php database/seed.php
+
+      - name: Yedekleme çalışıyor
+        run: |
+          php bin/yedekle.php
+          ls storage/yedekler
+
+      - name: Sunucuyu başlat ve duman testi
+        run: |
+          php -S 127.0.0.1:8000 -t public public/index.php > /tmp/sunucu.log 2>&1 &
+          sleep 2
+          for yol in / /projeler /blog /iletisim /rss.xml /sitemap.xml /robots.txt /admin/giris; do
+            kod=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:8000$yol")
+            echo "$yol -> $kod"
+            [ "$kod" = "200" ] || { echo "BEKLENMEYEN DURUM"; cat /tmp/sunucu.log; exit 1; }
+          done
+          # Oturumsuz admin yönlendirmeli, olmayan sayfa 404, CSRF'siz POST 403
+          [ "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/admin)" = "302" ]
+          [ "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/yok-boyle-sayfa)" = "404" ]
+          [ "$(curl -s -o /dev/null -w '%{http_code}' -X POST -d 'a=b' http://127.0.0.1:8000/iletisim/gonder)" = "403" ]
+          curl -sI http://127.0.0.1:8000/ | grep -qi '^content-security-policy:'

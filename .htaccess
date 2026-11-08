@@ -1,0 +1,23 @@
+# Kök .htaccess — YALNIZCA belge kökünü public/ klasörüne yönlendiremediğiniz durumlar içindir
+# (örn. XAMPP htdocs/portfolyo veya paylaşımlı hosting). Mümkünse DocumentRoot'u public/ yapın.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Uygulama kodu, yapılandırma ve gizli dosyalara HİÇBİR ZAMAN doğrudan erişim olmasın
+    RewriteRule ^(\.env|\.git|\.github|app|bin|config|database|storage|tests|docs|\.venv|logs|evidence|\.omc)(/|$) - [F,L]
+    RewriteRule ^(composer\.(json|lock)|Dockerfile|docker-compose\.yml|nginx\.conf\.example)$ - [F,L]
+    RewriteRule \.(sql|md|json|jsonl|log|example|lock)$ - [F,L]
+
+    # public/ içine zaten girilmişse dokunma (public/.htaccess devralır)
+    RewriteRule ^public/ - [L]
+
+    # Diğer her şeyi public/ altına taşı
+    RewriteRule ^$ public/ [L]
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

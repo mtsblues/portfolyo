@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+!config/.env.example
+.venv
+node_modules
+tests
+docs
+*.md
+storage/cache/*
+storage/oturum/*
+storage/yuklemeler/*
+storage/yedekler/*
+storage/logs/*
+!storage/**/.gitkeep
