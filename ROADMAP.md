@@ -19,10 +19,10 @@ Katkı ve öncelik önerileri için bir issue açın.
 - **Sayfalar** (gizlilik, aydınlatma metni, "Bu site hakkında"… serbest sayfalar) + **KVKK şablonları**, iletişim formunda açık onay, mesaj saklama süresi, IP kısaltma
 - **Bakım görevleri:** günlük döndürme, eski kayıt temizliği (cron'suz hostingler için web-cron adresi dahil)
 
-### v1.4 — Kişisel tanıtım ve CV
+### v1.4 — Kişisel tanıtım ve CV ✅ yayınlandı
 - Deneyim ve eğitim zaman çizgisi, yetenekler (seviye) ve sertifikalar, hizmetler ve referanslar
 - **Yazdırılabilir / PDF CV** sayfası (aynı verilerden otomatik), vCard (.vcf) indirme
-- "Yeni işlere açığım" durum rozeti, öne çıkan vaka çalışmaları (problem → çözüm → sonuç), projelere teknoloji etiketleri ve filtre
+- “Yeni işlere açığım” durum rozeti, vaka çalışması alanları (problem → çözüm → sonuç), projelere teknoloji etiketleri ve filtre
 - Makale: içindekiler, önceki/sonraki, paylaşım bağlantıları (3. taraf script olmadan)
 
 ### v1.5 — Günlük hayatta işe yarayanlar

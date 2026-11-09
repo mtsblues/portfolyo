@@ -137,6 +137,13 @@ function uygulamayi_calistir(): void
         }
     });
 
+    // Kurulu bir sitede dosyalar güncellendiyse (yönetici henüz panele girmediyse) şema geçişleri ilk istekte uygulanır.
+    // Hiç kurulmamış veritabanına dokunmaz (sema_surumu kaydı yoksa kurulum sihirbazı/betiği çalışmalıdır).
+    $kayitliSema = \App\Models\Ayar::al('sema_surumu', '');
+    if ($kayitliSema !== '' && (int) $kayitliSema < \App\Core\Kurulum::SEMA_SURUMU) {
+        \App\Core\Kurulum::otomatikGuncelle();
+    }
+
     (require KOK . '/config/rotalar.php')($yonlendirici);
     $yonlendirici->calistir($metot, $uri);
 

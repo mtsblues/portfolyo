@@ -17,19 +17,84 @@ final class Proje extends Model
         'arsiv'        => 'Arşiv',
     ];
 
-    public static function yayindaSay(): int
+    /** Teknoloji filtresi: "PHP, MySQL" biçiminde saklanan listede tam eşleşme (büyük/küçük harf duyarsız). */
+    private const TEKNOLOJI_KOSULU = "FIND_IN_SET(LOWER(?), REPLACE(LOWER(teknolojiler), ', ', ',')) > 0";
+
+    public static function yayindaSay(?string $teknoloji = null): int
     {
+        if ($teknoloji !== null && $teknoloji !== '') {
+            return (int) Veritabani::skaler(
+                "SELECT COUNT(*) FROM projeler WHERE durum <> 'arsiv' AND " . self::TEKNOLOJI_KOSULU,
+                [$teknoloji]
+            );
+        }
         return (int) Veritabani::skaler("SELECT COUNT(*) FROM projeler WHERE durum <> 'arsiv'");
     }
 
-    /** @return list<array<string,mixed>> */
-    public static function yayindaListe(int $limit, int $offset): array
+    /**
+     * Yayındaki projelerde kullanılan tüm teknolojiler (en çok kullanılan önce).
+     * @return list<array{ad:string,sayi:int}>
+     */
+    public static function teknolojiler(): array
     {
+        try {
+            $satirlar = Veritabani::hepsi("SELECT teknolojiler FROM projeler WHERE durum <> 'arsiv' AND teknolojiler IS NOT NULL AND teknolojiler <> ''");
+        } catch (\Throwable) {
+            return [];
+        }
+        $say = [];
+        $adlar = [];
+        foreach ($satirlar as $r) {
+            foreach (\App\Core\CvYardimci::teknolojiler((string) $r['teknolojiler']) as $t) {
+                $k = mb_strtolower($t);
+                $say[$k] = ($say[$k] ?? 0) + 1;
+                $adlar[$k] ??= $t;
+            }
+        }
+        arsort($say);
+        $cikti = [];
+        foreach ($say as $k => $n) {
+            $cikti[] = ['ad' => $adlar[$k], 'sayi' => $n];
+        }
+        return $cikti;
+    }
+
+    /** Öne çıkan projeler; yoksa son projeler. @return list<array<string,mixed>> */
+    public static function oneCikanlar(int $limit): array
+    {
+        try {
+            $l = Veritabani::hepsi(
+                "SELECT id, baslik, slug, aciklama, teknolojiler, proje_url, github_url FROM projeler
+                 WHERE durum <> 'arsiv' AND one_cikan = 1 ORDER BY sira ASC, id DESC LIMIT ?",
+                [$limit]
+            );
+            if ($l !== []) {
+                return $l;
+            }
+            return Veritabani::hepsi(
+                "SELECT id, baslik, slug, aciklama, teknolojiler, proje_url, github_url FROM projeler
+                 WHERE durum <> 'arsiv' ORDER BY sira ASC, id DESC LIMIT ?",
+                [$limit]
+            );
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /** @return list<array<string,mixed>> */
+    public static function yayindaListe(int $limit, int $offset, ?string $teknoloji = null): array
+    {
+        $kosul = '';
+        $p = [];
+        if ($teknoloji !== null && $teknoloji !== '') {
+            $kosul = ' AND ' . self::TEKNOLOJI_KOSULU;
+            $p[] = $teknoloji;
+        }
         return Veritabani::hepsi(
-            "SELECT id, baslik, slug, aciklama, gorsel, proje_url, github_url, one_cikan, durum, tamamlanma_tarihi
-             FROM projeler WHERE durum <> 'arsiv'
-             ORDER BY sira ASC, id DESC LIMIT ? OFFSET ?",
-            [$limit, $offset]
+            "SELECT id, baslik, slug, aciklama, gorsel, proje_url, github_url, one_cikan, durum, tamamlanma_tarihi, teknolojiler
+             FROM projeler WHERE durum <> 'arsiv'" . $kosul . '
+             ORDER BY sira ASC, id DESC LIMIT ? OFFSET ?',
+            array_merge($p, [$limit, $offset])
         );
     }
 
@@ -65,11 +130,12 @@ final class Proje extends Model
     public static function olustur(array $v): int
     {
         Veritabani::calistir(
-            'INSERT INTO projeler (baslik, slug, aciklama, icerik, gorsel, proje_url, github_url, one_cikan, durum, sira, tamamlanma_tarihi)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO projeler (baslik, slug, aciklama, icerik, gorsel, proje_url, github_url, one_cikan, durum, sira, tamamlanma_tarihi, teknolojiler, problem, cozum, sonuc)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $v['baslik'], $v['slug'], $v['aciklama'], $v['icerik'], $v['gorsel'], $v['proje_url'],
                 $v['github_url'], $v['one_cikan'], $v['durum'], $v['sira'], $v['tamamlanma_tarihi'],
+                $v['teknolojiler'], $v['problem'], $v['cozum'], $v['sonuc'],
             ]
         );
         return Veritabani::sonId();
@@ -80,11 +146,13 @@ final class Proje extends Model
     {
         Veritabani::calistir(
             'UPDATE projeler SET baslik = ?, slug = ?, aciklama = ?, icerik = ?, gorsel = ?, proje_url = ?,
-                    github_url = ?, one_cikan = ?, durum = ?, sira = ?, tamamlanma_tarihi = ?
+                    github_url = ?, one_cikan = ?, durum = ?, sira = ?, tamamlanma_tarihi = ?,
+                    teknolojiler = ?, problem = ?, cozum = ?, sonuc = ?
              WHERE id = ?',
             [
                 $v['baslik'], $v['slug'], $v['aciklama'], $v['icerik'], $v['gorsel'], $v['proje_url'],
-                $v['github_url'], $v['one_cikan'], $v['durum'], $v['sira'], $v['tamamlanma_tarihi'], $id,
+                $v['github_url'], $v['one_cikan'], $v['durum'], $v['sira'], $v['tamamlanma_tarihi'],
+                $v['teknolojiler'], $v['problem'], $v['cozum'], $v['sonuc'], $id,
             ]
         );
     }

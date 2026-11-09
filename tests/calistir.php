@@ -614,6 +614,89 @@ test('şema: v1.3 tabloları ve varsayılan ayarlar schema.sql içinde', functio
     }
 });
 
+echo "\n== v1.4 Tanıtım ve özgeçmiş\n";
+test('CvYardimci: ay/yıl biçimi, aralık ve nokta seviyesi', function (): void {
+    esit('Mart 2021', App\Core\CvYardimci::ayYil('2021-03'));
+    esit('', App\Core\CvYardimci::ayYil('2021-13'), 'geçersiz ay');
+    esit('', App\Core\CvYardimci::ayYil(null));
+    esit('Ocak 2020 – Aralık 2022', App\Core\CvYardimci::aralik('2020-01', '2022-12', false));
+    esit('Ocak 2020 – Devam ediyor', App\Core\CvYardimci::aralik('2020-01', '2022-12', true), 'devam eden bitişi yok sayar');
+    esit('Ocak 2020', App\Core\CvYardimci::aralik('2020-01', null, false));
+    esit(0, App\Core\CvYardimci::nokta(null));
+    esit(1, App\Core\CvYardimci::nokta(1));
+    esit(5, App\Core\CvYardimci::nokta(100));
+    esit(3, App\Core\CvYardimci::nokta(41));
+});
+test('CvYardimci::vcard: kaçışlar, CRLF enjeksiyonu yok, 75 bayt katlama', function (): void {
+    $v = App\Core\CvYardimci::vcard([
+        'ad' => "Ayşe Yılmaz\r\nEND:VCARD", 'unvan' => 'Dev; Ops, Lead', 'eposta' => 'a@b.test',
+        'telefon' => '+90 555 000 00 00', 'url' => 'https://ornek.test/', 'konum' => 'İstanbul, TR',
+    ]);
+    dogru(str_starts_with($v, "BEGIN:VCARD\r\nVERSION:3.0\r\n"), 'başlık');
+    dogru(str_ends_with($v, "END:VCARD\r\n"), 'bitiş');
+    esit(1, substr_count($v, "\r\nEND:VCARD"), 'ad içindeki END:VCARD ayrı satır olarak enjekte edilemez');
+    dogru(str_contains($v, 'TITLE:Dev\\; Ops\\, Lead'), 'noktalı virgül ve virgül kaçışlı');
+    dogru(str_contains($v, 'ADR;TYPE=WORK:;;İstanbul\\, TR;;;;'), 'adres ayırıcıları korunur');
+    $uzun = App\Core\CvYardimci::vcard(['ad' => 'X', 'not' => str_repeat('ş', 200)]);
+    foreach (explode("\r\n", $uzun) as $satir) {
+        dogru(strlen($satir) <= 75, 'satır 75 bayttan uzun: ' . strlen($satir));
+        dogru(mb_check_encoding($satir, 'UTF-8'), 'katlama UTF-8 karakterini bölmemeli');
+    }
+});
+test('CvYardimci::icindekiler: yalnızca h2/h3 ve kimlikli başlıklar', function (): void {
+    $html = '<h2 id="giris">Giriş</h2><p>x</p><h3 id="alt-baslik">Alt <em>başlık</em></h3><h4 id="d">Dört</h4><h2>Kimliksiz</h2><h2 id="son">A &amp; B</h2>';
+    $l = App\Core\CvYardimci::icindekiler($html);
+    esit(3, count($l));
+    esit('Alt başlık', $l[1]['metin']);
+    esit(3, $l[1]['seviye']);
+    esit('A & B', $l[2]['metin'], 'varlıklar çözülür; çıktıda e() ile yeniden kaçışlanır');
+    esit([], App\Core\CvYardimci::icindekiler(App\Core\Markdown::cevir('Sadece paragraf')));
+    $md = App\Core\CvYardimci::icindekiler(App\Core\Markdown::cevir("# Bir\n\nmetin\n\n## İki\n\nmetin\n\n# Üç"));
+    esit(3, count($md), 'Markdown # → h2, ## → h3');
+});
+test('CvYardimci::teknolojiler: tekilleştirir, sınırlar, etiketi ayıklar', function (): void {
+    esit(['PHP', 'MySQL'], App\Core\CvYardimci::teknolojiler('PHP, MySQL ,php,, '));
+    esit([], App\Core\CvYardimci::teknolojiler(null));
+    esit([], App\Core\CvYardimci::teknolojiler('   '));
+    esit(['alert(1)'], App\Core\CvYardimci::teknolojiler('<b>alert(1)</b>'), 'etiket temizlenir');
+    esit([], App\Core\CvYardimci::teknolojiler(str_repeat('x', 31)), '30 karakterden uzun atılır');
+    esit(12, count(App\Core\CvYardimci::teknolojiler(implode(',', range(1, 40)))), 'en çok 12');
+    esit(null, App\Core\CvYardimci::teknolojiMetni(''));
+    esit('Go, Rust', App\Core\CvYardimci::teknolojiMetni('Go,Rust'));
+});
+test('CvOgesi: türler tutarlı; geçersiz tür reddedilir', function (): void {
+    foreach (App\Models\CvOgesi::TURLER as $k => $t) {
+        dogru(isset($t['ad'], $t['tekil'], $t['baslik'], $t['alanlar']), 'eksik tanım: ' . $k);
+    }
+    dogru(App\Models\CvOgesi::turGecerli('deneyim'), 'deneyim geçerli');
+    dogru(!App\Models\CvOgesi::turGecerli("deneyim' OR 1=1"), 'enjeksiyon dizgisi geçersiz');
+    dogru(!App\Models\CvOgesi::turGecerli(''), 'boş geçersiz');
+    esit([], App\Models\CvOgesi::yayinda('olmayan'), 'geçersiz tür sorguya girmez');
+});
+test('v1.4 rotaları eşleşir; ayarlar ve şema hazır', function (): void {
+    $r = new Yonlendirici('');
+    (require KOK . '/config/rotalar.php')($r);
+    foreach (['/cv', '/cv/kartvizit', '/admin/cv', '/admin/cv/yeni', '/admin/cv/5/duzenle'] as $y) {
+        esit(200, $r->eslestir('GET', $y)['durum'], $y);
+    }
+    foreach (['/admin/cv/5/guncelle', '/admin/cv/5/sil', '/admin/cv/5/gorunur', '/admin/cv/yeni'] as $y) {
+        esit(200, $r->eslestir('POST', $y)['durum'], 'POST ' . $y);
+    }
+    esit(405, $r->eslestir('GET', '/admin/cv/5/sil')['durum'], 'silme yalnızca POST');
+    esit(404, $r->eslestir('GET', '/admin/cv/abc/duzenle')['durum'], 'sayısal olmayan kimlik');
+    foreach (['cv_yayin', 'cv_ad', 'cv_unvan', 'cv_ozet', 'cv_eposta', 'cv_konum', 'cv_telefon', 'cv_vcard', 'musait', 'musait_metin'] as $k) {
+        dogru(isset(App\Models\Ayar::alanlar()[$k]), 'ayar tanımı yok: ' . $k);
+    }
+    $sql = (string) file_get_contents(KOK . '/database/schema.sql');
+    $mig = (string) file_get_contents(KOK . '/database/migrasyon.php');
+    dogru(str_contains($sql, 'CREATE TABLE IF NOT EXISTS `cv_ogeleri`'), 'cv_ogeleri tablosu');
+    foreach (['teknolojiler', 'problem', 'cozum', 'sonuc'] as $c) {
+        dogru(str_contains($sql, '`' . $c . '`'), 'projeler.' . $c . ' schema.sql içinde yok');
+        dogru(str_contains($mig, "'" . $c . "'"), 'migrasyonda yok: ' . $c);
+    }
+    dogru(App\Core\Kurulum::SEMA_SURUMU >= 4, 'şema sürümü artırılmalı');
+});
+
 echo "\n";
 if ($kalan === []) {
     echo "TÜM TESTLER GEÇTİ ({$gecen})\n";

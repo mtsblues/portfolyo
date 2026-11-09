@@ -70,6 +70,29 @@ $hataGoster = static function (string $alan): void {
         </div>
     </div>
     <div class="alan">
+        <label for="teknolojiler">Teknolojiler <span class="soluk">(virgülle ayırın; en çok 12, ziyaretçiler bunlara göre filtreleyebilir)</span></label>
+        <input type="text" id="teknolojiler" name="teknolojiler" maxlength="400" placeholder="PHP, MySQL, Docker" value="<?= e($v('teknolojiler')) ?>">
+        <?php $hataGoster('teknolojiler'); ?>
+    </div>
+    <fieldset class="alan-grup">
+        <legend>Vaka çalışması <span class="soluk">(isteğe bağlı — doluysa proje sayfasında Problem → Çözüm → Sonuç olarak görünür)</span></legend>
+        <div class="alan">
+            <label for="problem">Problem</label>
+            <textarea id="problem" name="problem" rows="3" maxlength="3000"><?= e($v('problem')) ?></textarea>
+            <?php $hataGoster('problem'); ?>
+        </div>
+        <div class="alan">
+            <label for="cozum">Çözüm</label>
+            <textarea id="cozum" name="cozum" rows="3" maxlength="3000"><?= e($v('cozum')) ?></textarea>
+            <?php $hataGoster('cozum'); ?>
+        </div>
+        <div class="alan">
+            <label for="sonuc">Sonuç <span class="soluk">(ölçülebilir olursa daha etkili: “yükleme süresi %40 azaldı”)</span></label>
+            <textarea id="sonuc" name="sonuc" rows="3" maxlength="3000"><?= e($v('sonuc')) ?></textarea>
+            <?php $hataGoster('sonuc'); ?>
+        </div>
+    </fieldset>
+    <div class="alan">
         <label for="gorsel">Görsel <span class="soluk">(JPEG/PNG/WebP)</span></label>
         <input type="file" id="gorsel" name="gorsel" accept="image/jpeg,image/png,image/webp">
         <?php $hataGoster('gorsel'); ?>

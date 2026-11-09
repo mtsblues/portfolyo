@@ -13,6 +13,7 @@ $menu = [
 ];
 if (($kullanici['rol'] ?? '') === 'admin') {
     $menu[] = ['/admin/kullanicilar', 'Kullanıcılar', 'M16 11a4 4 0 10-8 0 4 4 0 008 0zM4 21c0-4 4-6 8-6s8 2 8 6'];
+    $menu[] = ['/admin/cv', 'Özgeçmiş', 'M5 3h14v18H5zM9 8h6M9 12h6M9 16h4'];
     $menu[] = ['/admin/sayfalar', 'Sayfalar', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h6'];
     $menu[] = ['/admin/yedekler', 'Yedekleme', 'M12 3v12M7 10l5 5 5-5M4 19h16'];
     $menu[] = ['/admin/ayarlar', 'Ayarlar', 'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2v3M12 19v3M2 12h3M19 12h3'];

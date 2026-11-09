@@ -26,6 +26,8 @@ final class AnaSayfaController extends Denetleyici
             'projeler'      => Proje::son(3),
             'makaleler'     => Makale::son(3),
             'kategoriler'   => Kategori::yayindakiler(),
+            'hizmetler'     => \App\Models\CvOgesi::yayinda('hizmet'),
+            'referanslar'   => \App\Models\CvOgesi::yayinda('referans'),
         ]);
     }
 
@@ -63,6 +65,9 @@ final class AnaSayfaController extends Denetleyici
         }
         if (hakkimda_var()) {
             $ekle('/hakkimda');
+        }
+        if (cv_acik()) {
+            $ekle('/cv');
         }
         foreach (Makale::sitemapIcin() as $m) {
             $ekle('/makale/' . $m['slug'], (string) $m['guncellenme']);

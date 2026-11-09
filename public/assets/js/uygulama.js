@@ -189,6 +189,27 @@
         });
     }
 
+    // ---- Özgeçmiş yazdırma ve bağlantı kopyalama (satır içi olay işleyici yok: CSP) ----
+    document.addEventListener('click', function (olay) {
+        var h = olay.target && olay.target.closest ? olay.target.closest('[data-yazdir], [data-kopyala]') : null;
+        if (!h) { return; }
+        if (h.hasAttribute('data-yazdir')) {
+            window.print();
+            return;
+        }
+        var metin = h.getAttribute('data-kopyala') || '';
+        var eski = h.textContent;
+        var bitti = function (ok) {
+            h.textContent = ok ? 'Kopyalandı ✓' : 'Kopyalanamadı';
+            setTimeout(function () { h.textContent = eski; }, 1800);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(metin).then(function () { bitti(true); }, function () { bitti(false); });
+        } else {
+            window.prompt('Bağlantıyı kopyalayın:', metin);
+        }
+    });
+
     // ---- İçerikteki görselleri büyütme (lightbox) ----
     var kutu = null;
     document.addEventListener('click', function (olay) {

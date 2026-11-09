@@ -69,6 +69,22 @@ final class Ayar
                 'altbilgi_metin'              => ['Altbilgi metni', 'text', 200, false, 'Boşsa "© yıl site başlığı" gösterilir.'],
             ],
         ],
+        'cv' => [
+            'baslik'   => 'Özgeçmiş ve müsaitlik',
+            'aciklama' => 'Özgeçmiş öğelerini (deneyim, eğitim, yetenek…) Yönetim → Özgeçmiş bölümünden girersiniz. Burada sayfanın genel bilgileri vardır. Özgeçmiş sayfası herkese açıktır: yalnızca paylaşmak istediğiniz bilgileri girin.',
+            'alanlar'  => [
+                'cv_yayin'     => ['Özgeçmiş sayfasını yayınla (/cv)', 'onay', 1, false, 'Kapalıyken /cv ve vCard 404 verir, menüde görünmez.'],
+                'cv_ad'        => ['Ad soyad', 'text', 120, false, 'Özgeçmişin ve kartvizitin başlığı. Boşsa site başlığı kullanılır.'],
+                'cv_unvan'     => ['Unvan', 'text', 120, false, 'Örn: Yazılım Geliştirici'],
+                'cv_ozet'      => ['Kısa özet (Markdown)', 'metin', 3000, false, 'Özgeçmişin en üstündeki tanıtım paragrafı.'],
+                'cv_eposta'    => ['Herkese açık e-posta', 'email', 180, false, 'Doluysa özgeçmişte ve kartvizitte görünür. Boşsa e-posta gösterilmez (iletişim formu kullanılır).'],
+                'cv_konum'     => ['Konum', 'text', 120, false, 'Örn: İstanbul, Türkiye'],
+                'cv_telefon'   => ['Telefon', 'text', 40, false, 'Doluysa özgeçmişte ve kartvizitte HERKESE AÇIK görünür. İstemiyorsanız boş bırakın.'],
+                'cv_vcard'     => ['Kartvizit (.vcf) indirmeyi aç', 'onay', 1, false, 'Ziyaretçi adınızı, e-postanızı, (varsa) telefonunuzu ve sitenizi rehberine ekleyebilir.'],
+                'musait'       => ['“Yeni işlere açığım” rozetini göster', 'onay', 1, false, 'Anasayfada ve özgeçmişte yeşil rozet olarak görünür.'],
+                'musait_metin' => ['Rozet metni', 'text', 60, false, 'Örn: Yeni projelere açığım'],
+            ],
+        ],
         'gizlilik' => [
             'baslik'   => 'Gizlilik ve KVKK',
             'aciklama' => 'İletişim formundan kişisel veri topladığınız için aydınlatma metni önerilir. Hazır şablonlar Sayfalar bölümündedir (hukuki danışmanlık değildir).',

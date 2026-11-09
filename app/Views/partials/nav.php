@@ -14,6 +14,7 @@
             <a href="<?= e(url('/projeler')) ?>"<?= menu_aktif('/projeler') ?>>Projeler</a>
             <a href="<?= e(url('/blog')) ?>"<?= menu_aktif('/blog') ?>>Bilgi Kütüphanesi</a>
             <?php if (hakkimda_var()): ?><a href="<?= e(url('/hakkimda')) ?>"<?= menu_aktif('/hakkimda') ?>>Hakkımda</a><?php endif; ?>
+            <?php if (cv_acik()): ?><a href="<?= e(url('/cv')) ?>"<?= menu_aktif('/cv') ?>>Özgeçmiş</a><?php endif; ?>
             <?php foreach (\App\Models\Sayfa::menu() as $sf): ?>
                 <a href="<?= e(url('/sayfa/' . $sf['slug'])) ?>"<?= menu_aktif('/sayfa/' . $sf['slug']) ?>><?= e((string) $sf['baslik']) ?></a>
             <?php endforeach; ?>

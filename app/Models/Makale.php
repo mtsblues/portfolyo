@@ -93,6 +93,28 @@ final class Makale extends Model
         );
     }
 
+    /** Bir önceki (daha eski) yayınlanmış makale. @return array{baslik:string,slug:string}|null */
+    public static function onceki(string $yayinTarihi, int $id): ?array
+    {
+        return Veritabani::tek(
+            'SELECT m.baslik, m.slug FROM makaleler m
+             WHERE ' . self::YAYIN . ' AND (m.yayin_tarihi < ? OR (m.yayin_tarihi = ? AND m.id < ?))
+             ORDER BY m.yayin_tarihi DESC, m.id DESC LIMIT 1',
+            [$yayinTarihi, $yayinTarihi, $id]
+        );
+    }
+
+    /** Bir sonraki (daha yeni) yayınlanmış makale. @return array{baslik:string,slug:string}|null */
+    public static function sonraki(string $yayinTarihi, int $id): ?array
+    {
+        return Veritabani::tek(
+            'SELECT m.baslik, m.slug FROM makaleler m
+             WHERE ' . self::YAYIN . ' AND (m.yayin_tarihi > ? OR (m.yayin_tarihi = ? AND m.id > ?))
+             ORDER BY m.yayin_tarihi ASC, m.id ASC LIMIT 1',
+            [$yayinTarihi, $yayinTarihi, $id]
+        );
+    }
+
     /** @return list<array<string,mixed>> */
     public static function etiketleri(int $makaleId): array
     {

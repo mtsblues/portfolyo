@@ -35,6 +35,7 @@ Site adı, ana sayfa başlığı, "Hakkımda", sosyal bağlantılar, logo ve pay
 - Brute-force kilidi, güçlü parola politikası, kendi parolasını değiştirme
 - **Yedekleme ve geri yükleme sihirbazı** (panelden tek tık; mysqldump gerekmez): kuru çalıştırma doğrulaması, geri yüklemeden önce otomatik yedek + hata olursa geri alma, otomatik zamanlama, **e-posta / FTP(S) / WebDAV ile dış yedek**
 - **Güvenlik merkezi:** açık oturumlar (uzaktan kapatma), denetim günlüğü, e-postayla **parola sıfırlama**, yeni cihaz bildirimi, zorunlu 2FA seçeneği
+- **Özgeçmiş:** deneyim/eğitim zaman çizgisi, yetenekler, sertifikalar, hizmetler, referanslar; **yazdırılabilir/PDF `/cv`** sayfası, **vCard** indirme, “yeni işlere açığım” rozeti; projelerde **teknoloji filtresi** ve **vaka çalışması**; makalelerde içindekiler, önceki/sonraki ve paylaşım bağlantıları
 - **Sayfalar + KVKK:** serbest sayfalar, hazır aydınlatma/gizlilik şablonları, iletişim formunda onay kutusu, mesaj saklama süresi, IP kısaltma
 - Veri kaybı olmadan **güncelleme** (SSH olmadan da: panele girince şema otomatik güncellenir) ve **bakım görevleri** (günlük döndürme, temizlik; cron ya da web-cron)
 - **Tarayıcıdan kurulum sihirbazı** (SSH olmayan hostingler için; varsayılan kapalı, token korumalı) ve panelde **canlı ortam kontrolü** (debug açık, HTTPS yok, proxy ayarı eksik, `install.php` duruyor…)

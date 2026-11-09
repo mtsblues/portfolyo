@@ -2,6 +2,29 @@
 
 Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) ilkelerine, sürümleme [SemVer](https://semver.org/lang/tr/) ilkelerine yakındır.
 
+## [1.4.0] — 2026-11-09 — Tanıtım
+
+> **Güncelleme:** dosyaları üzerine yazın; site açıldığında (ya da yönetim paneline girildiğinde) şema geçişi otomatik uygulanır (yeni `cv_ogeleri` tablosu, `projeler`'e 4 sütun). Özgeçmiş sayfası varsayılan olarak **kapalıdır**; Ayarlar → Özgeçmiş ve müsaitlik bölümünden açın.
+
+### Eklendi
+- **Özgeçmiş yönetimi** (Yönetim → Özgeçmiş, yalnızca yönetici): deneyim ve eğitim **zaman çizgisi** (ay/yıl, “devam ediyor”), **yetenekler** (gruplu, 1–5 nokta seviye), **sertifikalar** (alınış/geçerlilik, doğrulama bağlantısı), **hizmetler** ve **referanslar**; her öğe tek tıkla gizlenip yayınlanabilir, sıralanabilir.
+- **Özgeçmiş sayfası** (`/cv`): aynı verilerden otomatik oluşur, **yazdırma/PDF'e uygun** (menü ve düğmeler gizlenir, sayfa bölünmesi korunur); “Yazdır / PDF olarak kaydet” düğmesi (satır içi betik yok, CSP uyumlu).
+- **Kartvizit (vCard 3.0)** indirme (`/cv/kartvizit`): ad, unvan, e-posta, telefon, site, konum; değerler kaçışlanır, satırlar 75 bayta katlanır, satır sonu enjeksiyonu yoktur.
+- **“Yeni işlere açığım” rozeti:** anasayfada ve özgeçmişte, metni değiştirilebilir.
+- **Anasayfa:** “Neler yapıyorum” (hizmetler) ve “Referanslar” bölümleri (öğe yoksa görünmez), karşılama alanında **Özgeçmişim** düğmesi.
+- **Projeler:** **teknoloji etiketleri** (kartta, detayda ve `/projeler?teknoloji=` **filtresi**) ve **vaka çalışması** (Problem → Çözüm → Sonuç) alanları.
+- **Makaleler:** **içindekiler** (3+ başlıkta, açılır/kapanır), **önceki/sonraki** makale, **paylaşım bağlantıları** (X, LinkedIn, WhatsApp, e-posta, bağlantıyı kopyala) — üçüncü taraf betik yok.
+- Ayarlar → **Özgeçmiş ve müsaitlik** grubu: yayın anahtarı, ad, unvan, özet, **herkese açık e-posta**, konum, telefon, vCard anahtarı, müsaitlik rozeti.
+- Kurulu sitede dosyalar güncellendiyse **şema geçişi ilk istekte** uygulanır (yönetici panele girmeyi beklemez; hiç kurulmamış veritabanına dokunmaz).
+- Testler 58 → 64.
+
+### Değişti
+- `type="month"` alanları ve `form-satir` hizası ortak form stiline alındı.
+
+### Güvenlik / gizlilik
+- Özgeçmiş **kapalıyken** `/cv` ve vCard 404 verir; telefon ve e-posta yalnızca ilgili alanlar doluysa ve özgeçmiş yayındayken gösterilir (iletişim formu e-postası ayrıdır, ifşa edilmez).
+- Özgeçmiş metinleri Markdown beyaz listesinden geçer; başlıklar ve diğer alanlar kaçışlanır. `tur` ve teknoloji filtresi parametreleri beyaz liste/parametreli sorgu ile işlenir; dizi biçimindeki parametreler yok sayılır.
+
 ## [1.3.0] — 2026-11-09 — Güvence
 
 > **Güncelleme:** yedek alın, dosyaları üzerine yazın (`.env` ve `storage/` korunur) ve yönetim paneline girin; şema geçişleri (4 yeni tablo, `mesajlar.kvkk_onay`, yeni ayarlar) otomatik uygulanır. `bin/yedekle.php --yuklemeler` artık `--medya` (eski ad çalışmaya devam eder); medya yedeği `.zip` yerine `.tar.gz` olur.

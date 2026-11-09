@@ -9,6 +9,7 @@
             <a href="<?= e(url('/projeler')) ?>">Projeler</a>
             <a href="<?= e(url('/blog')) ?>">Blog</a>
             <?php if (hakkimda_var()): ?><a href="<?= e(url('/hakkimda')) ?>">Hakkımda</a><?php endif; ?>
+            <?php if (cv_acik()): ?><a href="<?= e(url('/cv')) ?>">Özgeçmiş</a><?php endif; ?>
             <a href="<?= e(url('/iletisim')) ?>">İletişim</a>
             <?php foreach (\App\Models\Sayfa::altbilgi() as $sf): ?>
                 <a href="<?= e(url('/sayfa/' . $sf['slug'])) ?>"><?= e((string) $sf['baslik']) ?></a>

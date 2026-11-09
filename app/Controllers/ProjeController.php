@@ -13,13 +13,22 @@ final class ProjeController extends Denetleyici
 
     public function liste(): void
     {
-        $s = $this->sayfala(Proje::yayindaSay(), self::SAYFA_BOYUTU);
+        $ham = $_GET['teknoloji'] ?? '';
+        $teknoloji = is_string($ham) ? trim($ham) : '';
+        if ($teknoloji === '' || mb_strlen($teknoloji) > 30 || preg_match('/[\x00-\x1f<>]/u', $teknoloji) === 1) {
+            $teknoloji = '';
+        }
+        $s = $this->sayfala(Proje::yayindaSay($teknoloji), self::SAYFA_BOYUTU);
         $this->gorunum('proje/liste', [
-            'sayfaBaslik'   => 'Projelerim · ' . ayar('site_baslik', 'Portfolyo'),
+            'sayfaBaslik'   => ($teknoloji !== '' ? $teknoloji . ' projeleri · ' : 'Projelerim · ') . ayar('site_baslik', 'Portfolyo'),
             'sayfaAciklama' => 'Geliştirdiğim sistemler, yazılımlar ve altyapı çalışmaları.',
-            'projeler'      => Proje::yayindaListe($s['limit'], $s['offset']),
+            'kanonik'       => mutlak_url('/projeler'),
+            'projeler'      => Proje::yayindaListe($s['limit'], $s['offset'], $teknoloji),
+            'teknolojiler'  => Proje::teknolojiler(),
+            'seciliTeknoloji' => $teknoloji,
             'sayfalama'     => $s,
             'sayfalamaYol'  => '/projeler',
+            'sayfalamaEk'   => $teknoloji !== '' ? ['teknoloji' => $teknoloji] : [],
         ]);
     }
 

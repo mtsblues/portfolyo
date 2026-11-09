@@ -31,6 +31,7 @@ Yalnızca en güncel sürüm düzeltme alır. Güncelleme: [docs/KURULUM.md](doc
 | Oturum izleme | Oturum başına rastgele izleme anahtarı (özeti saklanır); uzaktan kapatma bir sonraki istekte etkilidir; parola değişince diğer oturumlar kapanır |
 | Denetim günlüğü | Giriş/çıkış, başarısız deneme, parola/2FA, yedek ve tüm yönetici işlemleri; IP `ip_saklama` ayarına uyar (tam/kısaltılmış/yok) |
 | Yedek / geri yükleme | Yalnızca yönetici; geri yükleme parola (+2FA) ve yazılı onay ister; yedek dosyası **katı beyaz liste** ile doğrulanır (yalnızca uygulamanın tabloları için `DROP/CREATE/INSERT`; `SELECT`, `GRANT`, alt sorgu, dosya yazma, yığınlı ifade reddedilir); öncesinde otomatik yedek, hata olursa geri alma; indirme/geri yükleme adları yol gezdirmeye karşı doğrulanır; dış hedef parolaları yalnızca `.env`'de |
+| Herkese açık özgeçmiş | Varsayılan **kapalı** (404); telefon/e-posta yalnızca yöneticinin ayrıca doldurduğu alanlardan gösterilir (iletişim formu e-postası ifşa edilmez); metinler Markdown beyaz listesinden geçer, diğer alanlar kaçışlanır; vCard değerleri kaçışlanır ve satır sonu enjeksiyonu yapılamaz; teknoloji filtresi parametreli sorgudur |
 | Bilgi sızdırma | Üretimde hata ayrıntısı gösterilmez; günlüğe yazılır. `.env`, `app/`, `config/`, `storage/`, `bin/` web'den erişilemez |
 
 ## Dağıtım sahibi olarak sizin sorumluluklarınız

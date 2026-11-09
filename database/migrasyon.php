@@ -47,6 +47,13 @@ function migrasyonlari_uygula(PDO $pdo, string $db, string $yuklemeDizini): arra
         $log[] = 'mesajlar.kvkk_onay eklendi';
     }
 
+    // v1.4 — projelere teknoloji etiketleri ve vaka çalışması alanları (cv_ogeleri tablosu schema.sql ile gelir)
+    foreach (['teknolojiler' => 'VARCHAR(300) NULL', 'problem' => 'TEXT NULL', 'cozum' => 'TEXT NULL', 'sonuc' => 'TEXT NULL'] as $ad => $tanim) {
+        if (mig_sutun_ekle($pdo, $db, 'projeler', $ad, $tanim)) {
+            $log[] = "projeler.{$ad} eklendi";
+        }
+    }
+
     // v1.1 — yükleme dizinindeki eski dosyaları medya kütüphanesine kaydet (geriye dönük)
     if (is_dir($yuklemeDizini)) {
         $ekle = $pdo->prepare(

@@ -12,6 +12,12 @@
         </div>
         <h3><a href="<?= e(url('/proje/' . $proje['slug'])) ?>"><?= e($proje['baslik']) ?></a></h3>
         <p><?= e(ozet_kes((string) $proje['aciklama'], 140)) ?></p>
+        <?php $tek = \App\Core\CvYardimci::teknolojiler($proje['teknolojiler'] ?? null); ?>
+        <?php if ($tek !== []): ?>
+            <ul class="teknoloji-listesi" aria-label="Teknolojiler">
+                <?php foreach (array_slice($tek, 0, 5) as $t): ?><li><?= e($t) ?></li><?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
         <div class="kart-alt">
             <a class="baglanti-ok" href="<?= e(url('/proje/' . $proje['slug'])) ?>">Detaylar →</a>
         </div>

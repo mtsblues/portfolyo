@@ -21,6 +21,7 @@ Yönetim paneline `https://siteniz/admin/giris` adresinden girilir. Bu rehber i�
 | **Kategoriler / Etiketler** | Makaleleri düzenleme |
 | **Medya** | Yüklenen tüm görsel ve videolar |
 | **Mesajlar** | İletişim formundan gelenler |
+| **Özgeçmiş** | Deneyim, eğitim, yetenek, sertifika, hizmet, referans (yalnızca yönetici) |
 | **Kullanıcılar, Ayarlar** | (yalnızca yönetici) |
 
 **Dashboard → Canlı ortam kontrolü** (yalnızca yönetici): sitenizin canlıda güvenli ve doğru yapılandırıldığını denetler. Kırmızı (kritik) ve turuncu (uyarı) maddeleri düzeltin; mavi maddeler bilgidir. Örnekler: hata ayıklama modu açık, HTTPS yok, `SESSION_SECURE` kapalı, Cloudflare/proxy ayarı eksik, `install.php` sunucuda duruyor, `storage` yazılamıyor, PHP yükleme sınırı video sınırından küçük, yedek alınmamış.
@@ -154,6 +155,26 @@ Logo ve profil fotoğrafı alanlarına, önce **Medya**'ya yüklediğiniz dosyan
 - **Hazır şablonlar:** KVKK Aydınlatma Metni, Gizlilik ve Çerez Bildirimi, Bu Site Hakkında. Site adı, e-posta, mesaj saklama süresi ve IP politikasıyla doldurulup **taslak** oluşturulur. **Bunlar genel başlangıç metnidir, hukuki danışmanlık değildir**; yayımlamadan önce kendi durumunuza göre gözden geçirin.
 - **Ayarlar → Gizlilik ve KVKK:** yayındaki aydınlatma sayfasının adresini yazarsanız iletişim formunda **zorunlu onay kutusu** çıkar ve onay mesajla birlikte kaydedilir. *Mesaj saklama süresi* (gün) dolunca mesajlar bakım görevinde silinir. *IP saklama*: tam / kısaltılmış (önerilen) / hiç.
 - Site yalnızca oturum için gerekli çerez (yönetici girişi) ve tema tercihi için tarayıcı depolaması kullanır; üçüncü taraf izleyici yoktur.
+
+## Özgeçmiş, hizmetler ve müsaitlik
+
+**Yönetim → Özgeçmiş** (yalnızca yönetici) altı sekmeden oluşur: **Deneyim**, **Eğitim**, **Yetenekler**, **Sertifikalar**, **Hizmetler**, **Referanslar**.
+- *Deneyim / Eğitim:* başlangıç ve bitiş ayı seçin; devam ediyorsa “Devam ediyor”u işaretleyin. En yeni kayıt en üstte görünür. Açıklamada Markdown madde işaretleri kullanabilirsiniz.
+- *Yetenekler:* “Grup” alanına aynı değeri yazdıklarınız (örn. Backend) birlikte listelenir; seviye 0–100 girilir ve 1–5 nokta olarak gösterilir.
+- *Sertifikalar:* alınış tarihi, (varsa) geçerlilik sonu ve doğrulama bağlantısı.
+- *Hizmetler ve Referanslar* **anasayfada** “Neler yapıyorum” ve “Referanslar” bölümlerinde görünür. Referansı yalnızca kişinin izniyle ekleyin.
+- Her satırda **Gizle/Yayınla** ile kaydı silmeden sitede göstermeyi kapatabilirsiniz.
+
+**Ayarlar → Özgeçmiş ve müsaitlik:** özgeçmiş sayfasını (`/cv`) yayınlamak için *Özgeçmiş sayfasını yayınla*yı işaretleyin; ad, unvan, kısa özet, konum ve iletişim bilgilerini girin.
+> **Gizlilik:** özgeçmiş sayfası herkese açıktır. *Herkese açık e-posta* ve *Telefon* alanlarını yalnızca paylaşmak istiyorsanız doldurun; boş bıraktığınız bilgi sayfada ve kartvizitte hiç görünmez. İletişim formunun e-postası ayrıdır ve ifşa edilmez.
+
+- **Yazdır / PDF:** `/cv` sayfasındaki “Yazdır / PDF olarak kaydet” düğmesi tarayıcının yazdırma penceresini açar; hedef olarak “PDF olarak kaydet”i seçin. Menü ve düğmeler çıktıda görünmez.
+- **Kartvizit (.vcf):** ziyaretçiler tek tıkla rehberlerine ekleyebilir (Ayarlar'dan kapatılabilir).
+- **“Yeni işlere açığım” rozeti:** açıp metnini değiştirin (örn. “Ağustos’tan itibaren müsaitim”); anasayfada ve özgeçmişte görünür. Müsaitlik değişince kapatmayı unutmayın.
+
+**Projelerde:** *Teknolojiler* alanına virgülle ayırarak yazın (PHP, MySQL, Docker); ziyaretçiler proje listesinde bu etiketlere tıklayarak filtreleyebilir. *Vaka çalışması* (Problem / Çözüm / Sonuç) alanları doluysa proje sayfasında üç kutu olarak görünür — mümkünse sonucu ölçülebilir yazın.
+
+**Makalelerde:** üç ya da daha fazla başlık (`#`, `##`) varsa otomatik **içindekiler** çıkar; sayfa sonunda önceki/sonraki makale ve paylaşım bağlantıları görünür (paylaşım için üçüncü taraf betik yüklenmez).
 
 ## Kullanıcılar ve roller
 

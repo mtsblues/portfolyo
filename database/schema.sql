@@ -80,6 +80,10 @@ CREATE TABLE IF NOT EXISTS `projeler` (
     `durum`              ENUM('aktif','devam_ediyor','tamamlandi','arsiv') NOT NULL DEFAULT 'aktif',
     `sira`               INT NOT NULL DEFAULT 0,
     `tamamlanma_tarihi`  DATE NULL,
+    `teknolojiler`       VARCHAR(300) NULL,
+    `problem`            TEXT NULL,
+    `cozum`              TEXT NULL,
+    `sonuc`              TEXT NULL,
     `guncellenme`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `olusturulma`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_durum_sira` (`durum`, `sira`)
@@ -187,6 +191,26 @@ CREATE TABLE IF NOT EXISTS `sayfalar` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Varsayılan ayarlar (admin panelinden düzenlenebilir). Mevcut değerlerin üzerine YAZILMAZ.
+-- Özgeçmiş öğeleri: deneyim, eğitim, yetenek, sertifika, hizmet, referans (tek tablo, `tur` ile ayrılır)
+CREATE TABLE IF NOT EXISTS `cv_ogeleri` (
+    `id`          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `tur`         ENUM('deneyim','egitim','yetenek','sertifika','hizmet','referans') NOT NULL,
+    `baslik`      VARCHAR(200) NOT NULL,
+    `kurum`       VARCHAR(200) NULL,
+    `konum`       VARCHAR(120) NULL,
+    `baslangic`   CHAR(7) NULL,
+    `bitis`       CHAR(7) NULL,
+    `devam`       TINYINT(1) NOT NULL DEFAULT 0,
+    `seviye`      TINYINT UNSIGNED NULL,
+    `aciklama`    TEXT NULL,
+    `url`         VARCHAR(255) NULL,
+    `sira`        INT NOT NULL DEFAULT 0,
+    `gorunur`     TINYINT(1) NOT NULL DEFAULT 1,
+    `guncellenme` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `olusturulma` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_cv_tur` (`tur`, `gorunur`, `sira`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO `ayarlar` (`anahtar`, `deger`) VALUES
     ('site_baslik', 'Portfolyom'),
     ('site_aciklama', 'Projelerim, yazılarım ve çözüm arşivim.'),
@@ -218,6 +242,16 @@ INSERT IGNORE INTO `ayarlar` (`anahtar`, `deger`) VALUES
     ('yedek_medya_dahil', '0'),
     ('yedek_eposta', '0'),
     ('yedek_ftp', '0'),
-    ('yedek_webdav', '0');
+    ('yedek_webdav', '0'),
+    ('cv_yayin', '0'),
+    ('cv_ad', ''),
+    ('cv_unvan', ''),
+    ('cv_ozet', ''),
+    ('cv_eposta', ''),
+    ('cv_konum', ''),
+    ('cv_telefon', ''),
+    ('cv_vcard', '1'),
+    ('musait', '0'),
+    ('musait_metin', 'Yeni işlere açığım');
 
 SET FOREIGN_KEY_CHECKS = 1;

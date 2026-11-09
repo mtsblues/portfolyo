@@ -306,6 +306,18 @@ function sosyal_baglantilar(): array
     return $cikti;
 }
 
+/** Özgeçmiş sayfası (/cv) yayında mı? */
+function cv_acik(): bool
+{
+    return ayar('cv_yayin') === '1';
+}
+
+/** “Yeni işlere açığım” rozeti açık mı? */
+function musait_mi(): bool
+{
+    return ayar('musait') === '1' && trim(ayar('musait_metin')) !== '';
+}
+
 /** Hakkımda sayfası etkin mi (içerik girilmiş mi)? */
 function hakkimda_var(): bool
 {

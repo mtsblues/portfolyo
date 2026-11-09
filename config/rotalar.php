@@ -18,6 +18,8 @@ return static function (Yonlendirici $r): void {
     $r->get('/rss.xml', [AnaSayfaController::class, 'rss']);
     $r->get('/robots.txt', [AnaSayfaController::class, 'robots']);
     $r->get('/hakkimda', [AnaSayfaController::class, 'hakkimda']);
+    $r->get('/cv', [\App\Controllers\CvController::class, 'goster']);
+    $r->get('/cv/kartvizit', [\App\Controllers\CvController::class, 'vcard']);
     $r->get('/projeler', [ProjeController::class, 'liste']);
     $r->get('/proje/{slug}', [ProjeController::class, 'detay']);
     $r->get('/blog', [BlogController::class, 'liste']);
@@ -110,6 +112,15 @@ return static function (Yonlendirici $r): void {
     $r->get('/admin/sayfa/{id}/duzenle', [Admin\SayfaController::class, 'duzenle']);
     $r->post('/admin/sayfa/{id}/guncelle', [Admin\SayfaController::class, 'guncelle']);
     $r->post('/admin/sayfa/{id}/sil', [Admin\SayfaController::class, 'sil']);
+
+    // Özgeçmiş öğeleri: deneyim, eğitim, yetenek, sertifika, hizmet, referans
+    $r->get('/admin/cv', [Admin\CvController::class, 'liste']);
+    $r->get('/admin/cv/yeni', [Admin\CvController::class, 'yeni']);
+    $r->post('/admin/cv/yeni', [Admin\CvController::class, 'kaydet']);
+    $r->get('/admin/cv/{id}/duzenle', [Admin\CvController::class, 'duzenle']);
+    $r->post('/admin/cv/{id}/guncelle', [Admin\CvController::class, 'guncelle']);
+    $r->post('/admin/cv/{id}/gorunur', [Admin\CvController::class, 'gorunurDegistir']);
+    $r->post('/admin/cv/{id}/sil', [Admin\CvController::class, 'sil']);
 
     // Güvenlik merkezi: oturumlar ve denetim günlüğü
     $r->get('/admin/guvenlik', [Admin\GuvenlikController::class, 'index']);

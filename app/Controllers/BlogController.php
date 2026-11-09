@@ -77,6 +77,7 @@ final class BlogController extends Denetleyici
             $this->hata(404);
             return;
         }
+        $icerikHtml = Markdown::cevir((string) $makale['icerik']);
         $this->gorunum('blog/detay', [
             'sayfaBaslik'   => $makale['baslik'] . ' · ' . ayar('site_baslik', 'Portfolyo'),
             'sayfaAciklama' => (string) ($makale['ozet'] ?? ozet_kes((string) $makale['icerik'])),
@@ -94,7 +95,10 @@ final class BlogController extends Denetleyici
                 'mainEntityOfPage' => mutlak_url('/makale/' . $makale['slug']),
             ],
             'makale'        => $makale,
-            'icerikHtml'    => Markdown::cevir((string) $makale['icerik']),
+            'icerikHtml'    => $icerikHtml,
+            'icindekiler'   => \App\Core\CvYardimci::icindekiler($icerikHtml),
+            'onceki'        => Makale::onceki((string) $makale['yayin_tarihi'], (int) $makale['id']),
+            'sonraki'       => Makale::sonraki((string) $makale['yayin_tarihi'], (int) $makale['id']),
             'etiketler'     => Makale::etiketleri((int) $makale['id']),
             'ilgili'        => Makale::ilgili((int) $makale['kategori_id'], (int) $makale['id']),
         ]);

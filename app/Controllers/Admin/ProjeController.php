@@ -65,6 +65,10 @@ final class ProjeController extends AdminTemel
             'durum'             => 'gerekli|listede:' . implode(',', array_keys(Proje::DURUMLAR)),
             'sira'              => 'bos_olabilir|sayi',
             'tamamlanma_tarihi' => 'bos_olabilir|tarih',
+            'teknolojiler'      => 'bos_olabilir|max:400',
+            'problem'           => 'bos_olabilir|max:3000|cok_satir',
+            'cozum'             => 'bos_olabilir|max:3000|cok_satir',
+            'sonuc'             => 'bos_olabilir|max:3000|cok_satir',
         ]);
         $hatalar = $d->hatalar();
         $slug = (string) $d->deger('slug');
@@ -104,6 +108,10 @@ final class ProjeController extends AdminTemel
             'durum'             => (string) $d->deger('durum'),
             'sira'              => (int) $d->deger('sira', '0'),
             'tamamlanma_tarihi' => $bos((string) $d->deger('tamamlanma_tarihi')),
+            'teknolojiler'      => \App\Core\CvYardimci::teknolojiMetni((string) $d->deger('teknolojiler')),
+            'problem'           => $bos((string) $d->deger('problem')),
+            'cozum'             => $bos((string) $d->deger('cozum')),
+            'sonuc'             => $bos((string) $d->deger('sonuc')),
         ];
 
         try {
