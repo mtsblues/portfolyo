@@ -295,3 +295,4 @@ main > .uyari { width: min(1120px, 100% - 2.5rem); margin: 1rem auto 0; }
 /* ---------- İki adımlı doğrulama alanı ---------- */
 .kod-girdi { font: 600 1.4rem var(--mono); letter-spacing: .4em; text-align: center; }
 .alt-sosyal { margin-top: .75rem; }
+.form .onay > span { font-weight: 400; }

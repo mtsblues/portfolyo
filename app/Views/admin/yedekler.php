@@ -27,9 +27,9 @@ $yasi = $sonYedek > 0 ? (int) floor((time() - $sonYedek) / 86400) : null;
 </section>
 
 <section class="kart tablo-kap">
-    <div class="kart-baslik" style="padding:1rem 1rem 0"><h2>Yedekler</h2></div>
+    <div class="kart-baslik kart-baslik-ic"><h2>Yedekler</h2></div>
     <?php if ($yedekler === []): ?>
-        <p class="soluk" style="padding:1rem">Henüz yedek yok.</p>
+        <p class="soluk bos-ic">Henüz yedek yok.</p>
     <?php else: ?>
     <table class="tablo">
         <thead><tr><th>Dosya</th><th>Tür</th><th>Boyut</th><th>Tarih</th><th></th></tr></thead>
@@ -41,12 +41,13 @@ $yasi = $sonYedek > 0 ? (int) floor((time() - $sonYedek) / 86400) : null;
                 <td><?= e($bicim($y['boyut'])) ?></td>
                 <td><?= e(tarih(gmdate('Y-m-d H:i:s', $y['zaman']), true)) ?></td>
                 <td>
+                    <div class="eylemler">
                     <a class="btn btn-ghost btn-kucuk" href="<?= e(url('/admin/yedekler/' . $y['ad'] . '/indir')) ?>">İndir</a>
                     <?php if ($y['geri_yuklenebilir']): ?>
                         <a class="btn btn-ghost btn-kucuk" href="<?= e(url('/admin/yedekler/' . $y['ad'] . '/geri-yukle')) ?>">Geri yükle</a>
                     <?php endif; ?>
                     <?php if ($hedefler !== []): ?>
-                        <details style="display:inline-block">
+                        <details class="satir-ic">
                             <summary class="btn btn-ghost btn-kucuk">Gönder</summary>
                             <form class="form" method="post" action="<?= e(url('/admin/yedekler/' . $y['ad'] . '/gonder')) ?>">
                                 <?= csrf_field() ?>
@@ -57,9 +58,10 @@ $yasi = $sonYedek > 0 ? (int) floor((time() - $sonYedek) / 86400) : null;
                             </form>
                         </details>
                     <?php endif; ?>
-                    <form method="post" action="<?= e(url('/admin/yedekler/' . $y['ad'] . '/sil')) ?>" data-onay="Bu yedek kalıcı olarak silinsin mi?" style="display:inline">
+                    <form method="post" action="<?= e(url('/admin/yedekler/' . $y['ad'] . '/sil')) ?>" data-onay="Bu yedek kalıcı olarak silinsin mi?">
                         <?= csrf_field() ?><button class="btn btn-tehlike btn-kucuk" type="submit">Sil</button>
                     </form>
+                    </div>
                 </td>
             </tr>
         <?php endforeach; ?>

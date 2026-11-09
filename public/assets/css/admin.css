@@ -122,3 +122,14 @@ td.eylemler > * { display: inline-block; vertical-align: middle; }
 .saglik-uyari .saglik-isaret { color: #d97706; }
 .saglik-ok .saglik-isaret { color: var(--basari); }
 .saglik-kart { margin-bottom: 1.25rem; }
+
+/* v1.3: kart içi tablo başlıkları (inline style CSP ile engellenir) */
+.kart-baslik-ic { padding: 1rem 1rem 0; }
+.kart-not { padding: 0 1rem; }
+.bos-ic { padding: 1rem; }
+.satir-ic { display: inline-block; }
+.satir-ic > summary { list-style: none; cursor: pointer; }
+.satir-ic > summary::-webkit-details-marker { display: none; }
+.satir-ic[open] > form { position: absolute; z-index: 5; background: var(--yuzey); border: 1px solid var(--kenar); border-radius: 10px; padding: .75rem; box-shadow: var(--golge); }
+.tablo .eylemler { justify-content: flex-end; }
+.tablo td.zaman { white-space: nowrap; }
